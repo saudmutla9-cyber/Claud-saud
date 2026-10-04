@@ -4,64 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة سعود التفاعلية</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        .timer {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #e74c3c;
-            margin: 20px 0;
-        }
-        .btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-        #status {
-            margin-top: 15px;
-            font-weight: bold;
-            color: #27ae60;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .card { background: #fff; max-width: 650px; margin: 20px auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .nav-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .btn { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { background: #2980b9; }
+        .btn-admin { background: #8e44ad; }
+        .btn-success { background: #2ecc71; }
+        .timer { font-size: 2.5rem; font-weight: bold; color: #e74c3c; margin: 15px 0; }
+        #qrcode { display: flex; justify-content: center; margin: 15px 0; }
+        .hidden { display: none; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🎮 لعبة سعود التفاعلية</h1>
-        <p>مرحباً بك في اللعبة! انتظر بدء الجولة من لوحة التحكم.</p>
+    <!-- التنقل بين الشاشات -->
+    <div class="nav-btns">
+        <button class="btn" onclick="showScreen('player')">📱 واجهة اللاعبين</button>
+        <button class="btn btn-admin" onclick="showScreen('admin')">⚙️ لوحة الأدمن</button>
+    </div>
+
+    <!-- 1. واجهة اللاعبين -->
+    <div id="playerScreen" class="card">
+        <h1>🎮 مرحباً بك في اللعبة</h1>
+        <p>انتظر بدء السؤال من الشاشة الرئيسية...</p>
+        <div id="qrcode"></div>
+        <p style="font-size: 0.9rem; color: #666;">امسح الباركود للانضمام من الجوال</p>
+        <div class="timer" id="playerTimer">15</div>
+        <div id="currentQuestion" style="font-size: 1.2rem; font-weight: bold;">بانتظار إطلاق السؤال...</div>
+    </div>
+
+    <!-- 2. لوحة التحكم (الأدمن) -->
+    <div id="adminScreen" class="card hidden">
+        <h1>⚙️ لوحة تحكم الأدمن</h1>
         
-        <div class="timer" id="timer">15</div>
+        <h3>إضافة سؤال جديد:</h3>
+        <input type="text" id="qInput" placeholder="اكتب السؤال هنا...">
+        <button class="btn btn-success" onclick="sendQuestion()">إطلاق السؤال للمشاركين</button>
+        
+        <hr style="margin: 20px 0;">
 
-        <button class="btn" onclick="startTimer()">ابدأ العداد</button>
-
-        <div id="status">جاري الاتصال بـ Firebase...</div>
+        <h3>التحكم في العداد:</h3>
+        <button class="btn" onclick="startAdminTimer()">إعادة تشغيل العداد (15 ثانية)</button>
+        <div class="timer" id="adminTimer">15</div>
     </div>
 
     <!-- Firebase SDKs -->
@@ -69,7 +58,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        // إعدادات Firebase الخاصة بك
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AiZaSyAC3Keb8UpONcT7Nj_shA1CYZDY3cJdq1w",
             authDomain: "fm-game-ee133.firebaseapp.com",
@@ -81,30 +70,65 @@
             measurementId: "G-E95L0N336E"
         };
 
-        // تهيئة Firebase
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const db = firebase.database();
 
-        document.getElementById('status').innerText = "تم الاتصال بنجاح بقاعدة البيانات!";
+        // توليد الباركود تلقائياً لرابط الموقع
+        new QRCode(document.getElementById("qrcode"), {
+            text: window.location.href,
+            width: 150,
+            height: 150
+        });
 
-        // وظيفة العداد التنازلي (15 ثانية)
-        let timeLeft = 15;
-        let timerId;
-
-        function startTimer() {
-            clearInterval(timerId);
-            timeLeft = 15;
-            document.getElementById('timer').innerText = timeLeft;
+        // التبديل بين الواجهات
+        function showScreen(screen) {
+            document.getElementById('playerScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.add('hidden');
             
-            timerId = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').innerText = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    document.getElementById('timer').innerText = "انتهى الوقت!";
+            if(screen === 'player') document.getElementById('playerScreen').classList.remove('hidden');
+            if(screen === 'admin') document.getElementById('adminScreen').classList.remove('hidden');
+        }
+
+        // إدارة العداد
+        let timerVal = 15;
+        let timerInterval;
+
+        function startAdminTimer() {
+            db.ref('timer').set(15);
+        }
+
+        // إرسال سؤال من الأدمن
+        function sendQuestion() {
+            const q = document.getElementById('qInput').value;
+            if(q) {
+                db.ref('question').set(q);
+                startAdminTimer();
+            }
+        }
+
+        // الاستماع للتحديثات المباشرة من Firebase
+        db.ref('question').on('value', (snap) => {
+            if(snap.val()) {
+                document.getElementById('currentQuestion').innerText = "السؤال الحالي: " + snap.val();
+            }
+        });
+
+        db.ref('timer').on('value', (snap) => {
+            clearInterval(timerInterval);
+            timerVal = snap.val() || 15;
+            document.getElementById('playerTimer').innerText = timerVal;
+            document.getElementById('adminTimer').innerText = timerVal;
+
+            timerInterval = setInterval(() => {
+                if(timerVal > 0) {
+                    timerVal--;
+                    document.getElementById('playerTimer').innerText = timerVal;
+                    document.getElementById('adminTimer').innerText = timerVal;
+                } else {
+                    clearInterval(timerInterval);
                 }
             }, 1000);
-        }
+        });
     </script>
 </body>
 </html>
