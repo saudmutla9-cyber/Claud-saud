@@ -4,60 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحدي إدارة المرافق | FM Challenge</title>
-    <!-- مكتبة الباركود -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --gold: #f59e0b;
-        }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: all 0.2s ease; }
-        body { background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background-color: var(--card-bg); max-width: 700px; width: 100%; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; text-align: center; position: relative; overflow: hidden; }
-        
-        h1 { margin: 0 0 5px 0; color: var(--accent); font-size: 2rem; }
-        h2 { margin: 0 0 15px 0; color: var(--text-sub); font-size: 1.2rem; font-weight: 400; }
-        
-        .btn { background: var(--accent); color: #000; border: none; padding: 14px 28px; border-radius: 12px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
-        .btn:hover { background: var(--accent-hover); color: #fff; transform: translateY(-2px); }
-        .btn-admin { background: transparent; border: 2px solid var(--accent); color: var(--accent); margin-top: 25px; }
-        .btn-admin:hover { background: var(--accent); color: #000; }
-        .btn-danger { background: var(--danger); color: white; }
-        
-        input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; border: 2px solid #334155; background: #0f172a; color: #fff; font-size: 1.1rem; text-align: center; outline: none; }
-        input:focus { border-color: var(--accent); }
-
-        #qrcode { display: flex; justify-content: center; padding: 15px; background: #fff; border-radius: 16px; width: fit-content; margin: 20px auto; }
-        
-        .timer-box { font-size: 2.5rem; font-weight: 800; color: var(--gold); margin: 10px 0; background: #0f172a; display: inline-block; padding: 5px 25px; border-radius: 50px; border: 2px solid var(--gold); }
-        .hidden { display: none !important; }
-        
-        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
-        .opt-btn { background: #0f172a; border: 2px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-size: 1rem; text-align: right; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .opt-btn:hover { border-color: var(--accent); background: #1e293b; }
-        .opt-btn.correct { background: var(--success) !important; color: white !important; border-color: var(--success) !important; }
-        .opt-btn.wrong { background: var(--danger) !important; color: whiteتصميم لعبة متكاملة لتحدي إدارة المرافق (FM Challenge) بجميع الشروط والمواصفات المطلوبة، بما في ذلك أسئلة الملف الـ 20، نظام احتساب النقاط بناءً على السرعة والدقة، واجهة الترحيب والباركود، واجهة اللاعبين مع التسجيل والانتظار، والتحكم الكامل للأدمن مع شاشة النتائج النهائية.
-
-### الكود الشامل والكامل للملف (`index.html`)
-
-استبدل محتوى ملف `index.html` كاملاً بالكود التالي:
-
-```html
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي إدارة المرافق | FM Challenge</title>
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js](https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js)"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -79,24 +25,23 @@
 
         .btn { background: var(--accent-color); color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
         .btn:hover { opacity: 0.9; }
-        .btn-admin { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); margin-top: 25px; }
+        .btn-admin { background: transparent; border: 2px solid var(--accent-color); color: var(--accent-color); margin-top: 20px; font-size: 1.1rem; }
+        .btn-admin:hover { background: var(--accent-color); color: #000; }
         .btn-success { background: var(--btn-green); color: #fff; }
         
         input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 1.1rem; text-align: center; }
         
-        #qrcode { display: flex; justify-content: center; padding: 15px; background: #fff; border-radius: 12px; width: fit-content; margin: 20px auto; }
-        
+        .qr-box { display: flex; justify-content: center; align-items: center; padding: 15px; background: #fff; border-radius: 12px; width: fit-content; margin: 20px auto; }
+        .qr-box img { width: 180px; height: 180px; display: block; }
+
         .timer { font-size: 2.8rem; font-weight: bold; color: #f43f5e; margin: 10px 0; }
         .hidden { display: none !important; }
         
-        /* خيارات الأسئلة */
         .option-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 12px; margin: 8px 0; width: 100%; border-radius: 8px; text-align: right; cursor: pointer; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .option-btn:hover { background: #475569; }
-        .option-btn.selected { border-color: var(--accent-color); background: #1e3a8a; }
         .option-btn.correct { background: var(--btn-green) !important; color: #fff; }
         .option-btn.wrong { background: var(--btn-red) !important; color: #fff; }
 
-        /* قوائم المتصدرين واللاعبين */
         .leaderboard { margin-top: 15px; text-align: right; }
         .player-row { display: flex; justify-content: space-between; padding: 10px; background: #0f172a; margin: 5px 0; border-radius: 6px; border-right: 4px solid var(--accent-color); }
         .winner-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; font-size: 1.3rem; }
@@ -108,10 +53,290 @@
 </head>
 <body>
 
-    <!-- 1. الشاشة الرئيسية (الترحيب والباركود للبروجكتور) -->
+    <!-- 1. الشاشة الرئيسية (الترحيب والباركود وزر الأدمن) -->
     <div id="mainDisplay" class="card">
         <h1>مرحباً بكم في تحدي إدارة المرافق</h1>
         <h2>Welcome to FM Challenge</h2>
         <p>امسح الباركود للانضمام إلى التحدي عبر جوالك (الحد الأقصى 30 لاعبًا)</p>
-        <div id="qrcode"></div>
-        <p style="font-size:
+        
+        <!-- باركود مباشر مضمون الظهور -->
+        <div class="qr-box">
+            <img id="qrImg" src="" alt="QR Code">
+        </div>
+
+        <p style="font-size: 0.9rem;">20 سؤالاً · 15 ثانية لكل سؤال</p>
+        
+        <!-- زر لوحة تحكم الأدمن -->
+        <button class="btn btn-admin" onclick="switchView('adminView')">⚙️ لوحة تحكم الأدمن</button>
+    </div>
+
+    <!-- 2. واجهة تسجيل اللاعب (الجوال) -->
+    <div id="playerRegisterView" class="card hidden">
+        <h1>انضمام للتحدي 🎮</h1>
+        <h2>Join the Challenge</h2>
+        <input type="text" id="playerNameInput" placeholder="أدخل اسمك الكريم / Enter Your Name" maxlength="20">
+        <button class="btn" onclick="registerPlayer()">دخول / Join</button>
+    </div>
+
+    <!-- 3. صفحة انتظار اللاعبين -->
+    <div id="playerWaitingView" class="card hidden">
+        <h1 id="welcomePlayerMsg">أهلاً بك!</h1>
+        <p style="color: var(--accent-color); font-size: 1.2rem;">أنت الآن في قائمة الانتظار ⏳</p>
+        <p>ستبدأ اللعبة فور إطلاق السؤال الأول من قبل الأدمن.</p>
+    </div>
+
+    <!-- 4. واجهة لعب الأسئلة للاعبين -->
+    <div id="playerGameView" class="card hidden">
+        <div class="timer" id="playerTimer">15</div>
+        <div id="questionContainer" style="margin-bottom: 15px; text-align: right;">
+            <span class="bilingual-ar" id="qAr" style="font-size: 1.2rem; font-weight: bold;"></span>
+            <span class="bilingual-en" id="qEn" style="margin-top: 4px;"></span>
+        </div>
+        <div id="optionsContainer"></div>
+        <div id="feedbackMsg" style="margin-top: 15px; font-weight: bold; font-size: 1.1rem;"></div>
+    </div>
+
+    <!-- 5. واجهة النتائج والترتيب بين الأسئلة -->
+    <div id="leaderboardView" class="card hidden">
+        <h1>جدول الترتيب 🏆</h1>
+        <h2>Leaderboard</h2>
+        <div class="leaderboard" id="leaderboardList"></div>
+    </div>
+
+    <!-- 6. لوحة تحكم الأدمن -->
+    <div id="adminView" class="card hidden">
+        <h1>⚙️ لوحة تحكم الأدمن</h1>
+        <p>عدد اللاعبين المنضمين: <strong id="playerCount" style="color: var(--accent-color);">0</strong> / 30</p>
+        <div id="adminPlayersList" style="margin-bottom: 15px; text-align: right; max-height: 100px; overflow-y: auto;"></div>
+        
+        <button class="btn btn-success" id="nextQBtn" onclick="nextQuestion()">▶️ بدء اللعبة / السؤال التالي</button>
+        <div class="timer" id="adminTimer">15</div>
+        <p id="adminStatus"></p>
+        <button class="btn btn-admin" style="margin-top:10px;" onclick="switchView('mainDisplay')">⬅️ العودة للرئيسية</button>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // إعدادات Firebase
+        const firebaseConfig = {
+            apiKey: "AiZaSyAC3Keb8UpONcT7Nj_shA1CYZDY3cJdq1w",
+            authDomain: "fm-game-ee133.firebaseapp.com",
+            databaseURL: "https://fm-game-ee133-default-rtdb.firebaseio.com",
+            projectId: "fm-game-ee133",
+            storageBucket: "fm-game-ee133.firebasestorage.app",
+            messagingSenderId: "661072425550",
+            appId: "1:661072425550:web:32804ea46fce82c323091f",
+            measurementId: "G-E95L0N336E"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // توليد الباركود المباشر
+        const targetUrl = window.location.href.split('?')[0] + '?mode=play';
+        document.getElementById('qrImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(targetUrl);
+
+        const correctPhrases = ["كفو استمر! 🌟", "المركز الأول لك! 🚀", "مستقبل إدارة المرافق يعتمد عليك! 👏", "إجابة رائعة! 💯"];
+        const wrongPhrases = ["أنت قدها شد حيلك! 💪", "كنت قريب حاول أكثر! 🎯", "تعوضها في السؤال الجاي! 🔥", "ركز وبإذن الله القادم أفضل! ✨"];
+
+        const questions = [
+            { qAr: "1. أيٌّ من المهام التالية تقع عادةً ضمن الدور الإداري لإدارة المرافق؟", qEn: "Which task typically falls under FM's administrative role?", options: [{ar: "إدارة التوظيف وشؤون الموظفين", en: "Managing recruitment and employee relations"}, {ar: "إعداد القوائم المالية للشركة", en: "Preparing company financial statements"}, {ar: "إدارة البنية التحتية للشبكات والأنظمة", en: "Managing IT network infrastructure"}, {ar: "إدارة عقود الموردين ومتابعة أدائهم", en: "Managing vendor contracts and performance"}], correct: 3 },
+            { qAr: "2. ما المقصود بالتكلفة الإجمالية للملكية (TCO) لأي أصل؟", qEn: "What does Total Cost of Ownership (TCO) mean for an asset?", options: [{ar: "إجمالي تكلفة الأصل من الشراء حتى الاستبعاد", en: "Total cost of an asset from purchase to disposal"}, {ar: "سعر شراء الأصل فقط", en: "Purchase price only"}, {ar: "تكلفة الصيانة السنوية للأصل", en: "Annual maintenance cost of the asset"}, {ar: "القيمة الدفترية للأصل بعد الاستهلاك", en: "Book value of the asset after depreciation"}], correct: 0 },
+            { qAr: "3. ما المقصود بالصيانة الوقائية؟", qEn: "What is preventive maintenance?", options: [{ar: "إصلاح المعدات فور تعطلها", en: "Repairing equipment as soon as it fails"}, {ar: "إصلاح طارئ خارج أوقات الدوام", en: "Emergency repair outside working hours"}, {ar: "صيانة مجدولة لتقليل احتمالية الأعطال", en: "Scheduled maintenance to reduce the likelihood of failures"}, {ar: "معالجة الأعطال حسب أولوية البلاغات", en: "Handling faults based on ticket priority"}], correct: 2 },
+            { qAr: "4. أيٌّ مما يلي يُعد من الخدمات الناعمة (Soft Services)؟", qEn: "Which one is a soft service?", options: [{ar: "صيانة المصاعد", en: "Lift maintenance"}, {ar: "خدمات النظافة والضيافة", en: "Cleaning and hospitality services"}, {ar: "صيانة أنظمة التكييف", en: "HVAC maintenance"}, {ar: "صيانة أنظمة إنذار الحريق", en: "Fire alarm system maintenance"}], correct: 1 },
+            { qAr: "5. ما المقصود بالمصروفات التشغيلية (OPEX) في إدارة المرافق؟", qEn: "What does OPEX mean in Facilities Management?", options: [{ar: "تكلفة شراء أصول طويلة الأجل مثل المولدات", en: "Cost of acquiring long-term assets such as generators"}, {ar: "ميزانية مشاريع التوسعة والتجديد", en: "Budget for expansion and renovation projects"}, {ar: "احتياطي الطوارئ المخصص للمشاريع", en: "Contingency reserve for projects"}, {ar: "تكاليف التشغيل المتكررة مثل الكهرباء والصيانة والنظافة", en: "Recurring running costs such as utilities, maintenance and cleaning"}], correct: 3 },
+            { qAr: "6. أيٌّ مما يلي يُعد مصروفًا رأسماليًا (CAPEX)؟", qEn: "Which of the following is a capital expense (CAPEX)?", options: [{ar: "استبدال نظام التكييف المركزي بالكامل", en: "Replacing the entire central AC system"}, {ar: "عقد الصيانة الدورية للتكييف", en: "Periodic AC maintenance contract"}, {ar: "استبدال فلاتر التكييف كل ثلاثة أشهر", en: "Replacing AC filters every three months"}, {ar: "فاتورة الكهرباء الشهرية", en: "Monthly electricity bill"}], correct: 0 },
+            { qAr: "7. ماذا يعني اختصار SLA في عقود الموردين؟", qEn: "What is an SLA in vendor contracts?", options: [{ar: "ضمان مسؤولية المورد", en: "Supplier Liability Assurance"}, {ar: "التوزيع القياسي للعمالة", en: "Standard Labor Allocation"}, {ar: "اتفاقية مستوى الخدمة", en: "Service Level Agreement"}, {ar: "ملحق التزامات السلامة", en: "Safety Liability Addendum"}], correct: 2 },
+            { qAr: "8. أي مرحلة تستهلك الجزء الأكبر من تكلفة المبنى على مدى عمره؟", qEn: "Which phase takes the largest share of a building's lifecycle cost?", options: [{ar: "التصميم والهندسة", en: "Design and engineering"}, {ar: "التشغيل والصيانة", en: "Operation and maintenance"}, {ar: "الإنشاء", en: "Construction"}, {ar: "شراء الأرض واستخراج التصاريح", en: "Land acquisition and permits"}], correct: 1 },
+            { qAr: "9. كيف تساهم إدارة المرافق في خفض تكاليف الشركة؟", qEn: "How does FM help reduce company costs?", options: [{ar: "اختيار أقل عرض سعر دائمًا بغض النظر عن الجودة", en: "Always choosing the lowest bid regardless of quality"}, {ar: "تقليل زيارات الصيانة الوقائية لتوفير المصاريف", en: "Cutting preventive maintenance visits to save money"}, {ar: "تأجيل أعمال الصيانة إلى نهاية السنة المالية", en: "Deferring maintenance to the end of the fiscal year"}, {ar: "ترشيد الطاقة والتفاوض مع الموردين والصيانة الوقائية", en: "Energy saving, vendor negotiation and preventive maintenance"}], correct: 3 },
+            { qAr: "10. ما دور إدارة المرافق في إعداد ميزانية الشركة؟", qEn: "What is FM's role in preparing the company budget?", options: [{ar: "تقدير تكاليف التشغيل والصيانة والمشاريع للسنة القادمة", en: "Forecasting operating, maintenance and project costs for the coming year"}, {ar: "اعتماد الميزانية النهائية للشركة", en: "Approving the company's final budget"}, {ar: "إعداد ميزانية الرواتب والمكافآت", en: "Preparing the payroll and bonus budget"}, {ar: "تقدير إيرادات الشركة المتوقعة", en: "Forecasting company revenue"}], correct: 0 },
+            { qAr: "11. ما الهدف الرئيسي لنظام التحكم في الدخول (Access Control)؟", qEn: "What is the main purpose of an access control system?", options: [{ar: "مراقبة الكاميرات وتسجيل الفيديو", en: "CCTV monitoring and recording"}, {ar: "إطلاق إنذار الحريق تلقائيًا", en: "Triggering fire alarms automatically"}, {ar: "تحديد من يدخل المبنى أو المناطق المحددة ومتى", en: "Controlling who enters the building or specific areas, and when"}, {ar: "إدارة استقبال الزوار وضيافتهم", en: "Managing visitor reception and hospitality"}], correct: 2 },
+            { qAr: "12. لماذا تتابع إدارة المرافق تجديد رخص المنشأة مثل رخصة البلدية وشهادة الدفاع المدني؟", qEn: "Why does FM track renewals of facility licenses such as municipality and Civil Defense permits?", options: [{ar: "لأنها مطلوبة فقط عند بيع المبنى", en: "Because they are only required when selling the building"}, {ar: "لضمان الامتثال النظامي وتجنب الغرامات وتوقف الأعمال", en: "To ensure compliance and avoid fines or business disruption"}, {ar: "لأنها من متطلبات تقييم أداء الموظفين", en: "Because they are part of employee performance reviews"}, {ar: "لتخفيض قيمة عقد الإيجار", en: "To reduce the lease cost"}], correct: 1 },
+            { qAr: "13. ما درجة الحرارة المريحة الموصى بها غالبًا في المكاتب؟", qEn: "What office temperature range is commonly recommended?", options: [{ar: "18–20°C", en: "18–20°C"}, {ar: "25–27°C", en: "25–27°C"}, {ar: "15–17°C", en: "15–17°C"}, {ar: "21–24°C", en: "21–24°C"}], correct: 3 },
+            { qAr: "14. ماذا يقيس مؤشر استغلال المساحات (Space Utilization)؟", qEn: "What does space utilization measure?", options: [{ar: "مدى الاستفادة الفعلية من المساحات مقارنة بالمتاح", en: "How effectively available space is actually used"}, {ar: "إجمالي المساحة المؤجرة بالمتر المربع", en: "Total leased area in square meters"}, {ar: "تكلفة الإيجار لكل موظف", en: "Rent cost per employee"}, {ar: "عدد المكاتب المخصصة لكل قسم", en: "Number of desks allocated per department"}], correct: 0 },
+            { qAr: "15. ما الهدف الأساسي لإدارة المرافق؟", qEn: "What is the core goal of Facilities Management?", options: [{ar: "تقليل تكاليف المباني بأي وسيلة", en: "Cutting building costs by any means"}, {ar: "صيانة المعدات وإصلاح الأعطال", en: "Maintaining equipment and fixing breakdowns"}, {ar: "دمج الناس والمكان والعمليات لدعم أهداف المنظمة", en: "Integrating people, place and process to support the organization"}, {ar: "إدارة العقارات والأصول المملوكة للشركة", en: "Managing the company's real estate portfolio"}], correct: 2 },
+            { qAr: "16. ما الغرض من سجل الأصول (Asset Register)؟", qEn: "What is the purpose of an asset register?", options: [{ar: "حصر الموظفين حسب الأقسام", en: "Listing employees by department"}, {ar: "توثيق الأصول ومواقعها وحالتها وتواريخ صيانتها", en: "Recording assets, their locations, condition and maintenance dates"}, {ar: "متابعة طلبات الشراء المعلقة", en: "Tracking pending purchase requests"}, {ar: "تسجيل الزوار اليومي", en: "Daily visitor log"}], correct: 1 },
+            { qAr: "17. قبل اعتماد فاتورة المورد، ما الذي يجب على إدارة المرافق التحقق منه؟", qEn: "Before approving a vendor invoice, what should FM verify?", options: [{ar: "أن المورد هو الأقدم تعاملًا مع الشركة", en: "That the vendor has worked with the company the longest"}, {ar: "أن قيمة الفاتورة أقل من الشهر السابق", en: "That the amount is lower than last month"}, {ar: "أن الفاتورة مختومة فقط", en: "Only that the invoice is stamped"}, {ar: "مطابقة الفاتورة للعقد وللخدمة المنفذة فعليًا", en: "That the invoice matches the contract and the work actually delivered"}], correct: 3 },
+            { qAr: "18. ماذا يقيس مؤشر زمن الاستجابة (Response Time) في بلاغات الصيانة؟", qEn: "What does response time measure in maintenance requests?", options: [{ar: "الوقت من تسجيل البلاغ حتى بدء الفني بالتعامل معه", en: "Time from logging a request until a technician starts work"}, {ar: "الوقت اللازم لإغلاق البلاغ نهائيًا", en: "Time needed to fully close the request"}, {ar: "عدد البلاغات المسجلة شهريًا", en: "Number of requests logged per month"}, {ar: "متوسط تكلفة البلاغ الواحد", en: "Average cost per request"}], correct: 0 },
+            { qAr: "19. ما دور إدارة المرافق في خطة استمرارية الأعمال؟", qEn: "What is FM's role in a business continuity plan?", options: [{ar: "إعداد خطة التسويق أثناء الأزمات", en: "Preparing the crisis marketing plan"}, {ar: "إدارة علاقات المستثمرين", en: "Managing investor relations"}, {ar: "ضمان جاهزية المبنى والأنظمة الحيوية لاستمرار العمل في الطوارئ", en: "Keeping the building and critical systems ready so work continues during emergencies"}, {ar: "إعداد خطط التوظيف البديلة", en: "Preparing backup hiring plans"}], correct: 2 },
+            { qAr: "20. أي إجراء يحقق وفورات مباشرة في فاتورة الكهرباء؟", qEn: "Which action directly reduces the electricity bill?", options: [{ar: "زيادة ساعات تشغيل التكييف للحفاظ على البرودة", en: "Running the AC for longer hours to keep spaces cool"}, {ar: "استخدام إضاءة LED وحساسات الحركة وجدولة التكييف", en: "Using LED lighting, motion sensors and AC scheduling"}, {ar: "شراء مولد احتياطي أكبر", en: "Buying a larger backup generator"}, {ar: "تجديد أثاث المكاتب", en: "Replacing office furniture"}], correct: 1 }
+        ];
+
+        let currentPlayerName = '';
+        let hasAnswered = false;
+        let timerInterval;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'play') {
+            switchView('playerRegisterView');
+        }
+
+        function switchView(viewId) {
+            ['mainDisplay', 'playerRegisterView', 'playerWaitingView', 'playerGameView', 'leaderboardView', 'adminView'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function registerPlayer() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            if (!name) return alert('يرجى إدخال اسمك');
+
+            db.ref('players').once('value', snap => {
+                const players = snap.val() || {};
+                if (Object.keys(players).length >= 30) {
+                    alert('عذراً، اكتمل العدد الأقصى للاعبين (30 لاعبًا).');
+                    return;
+                }
+                currentPlayerName = name;
+                db.ref('players/' + name).set({ score: 0, joined: true });
+                document.getElementById('welcomePlayerMsg').innerText = "أهلاً بك يا " + name + "!";
+                switchView('playerWaitingView');
+            });
+        }
+
+        db.ref('players').on('value', snap => {
+            const players = snap.val() || {};
+            const names = Object.keys(players);
+            document.getElementById('playerCount').innerText = names.length;
+            document.getElementById('adminPlayersList').innerHTML = names.map(n => `<span style="display:inline-block; background:#334155; padding:4px 8px; margin:2px; border-radius:4px;">${n}</span>`).join(' ');
+        });
+
+        function nextQuestion() {
+            db.ref('gameState').once('value', snap => {
+                const state = snap.val() || { questionIndex: -1 };
+                let nextIdx = state.questionIndex + 1;
+
+                if (nextIdx < questions.length) {
+                    db.ref('gameState').set({
+                        questionIndex: nextIdx,
+                        timer: 15,
+                        status: 'question',
+                        startTime: Date.now()
+                    });
+                    runTimer(15);
+                } else {
+                    db.ref('gameState').set({ status: 'ended' });
+                }
+            });
+        }
+
+        function runTimer(seconds) {
+            let sec = seconds;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                sec--;
+                db.ref('gameState/timer').set(sec);
+                if (sec <= 0) {
+                    clearInterval(timerInterval);
+                    setTimeout(() => {
+                        db.ref('gameState/status').set('leaderboard');
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        db.ref('gameState').on('value', snap => {
+            const state = snap.val();
+            if (!state) return;
+
+            document.getElementById('playerTimer').innerText = state.timer || 0;
+            document.getElementById('adminTimer').innerText = state.timer || 0;
+
+            if (state.status === 'question') {
+                hasAnswered = false;
+                showQuestion(state.questionIndex);
+            } else if (state.status === 'leaderboard') {
+                showLeaderboard(false);
+            } else if (state.status === 'ended') {
+                showLeaderboard(true);
+            }
+        });
+
+        function showQuestion(idx) {
+            const q = questions[idx];
+            document.getElementById('qAr').innerText = q.qAr;
+            document.getElementById('qEn').innerText = q.qEn;
+            document.getElementById('feedbackMsg').innerText = '';
+
+            let html = '';
+            q.options.forEach((opt, optIdx) => {
+                html += `
+                    <button class="option-btn" id="optBtn_${optIdx}" onclick="submitAnswer(${idx}, ${optIdx})">
+                        <span class="bilingual-ar">${opt.ar}</span>
+                        <span class="bilingual-en">${opt.en}</span>
+                    </button>
+                `;
+            });
+            document.getElementById('optionsContainer').innerHTML = html;
+
+            if (currentPlayerName && !document.getElementById('adminView').classList.contains('hidden') === false) {
+                switchView('playerGameView');
+            }
+        }
+
+        function submitAnswer(qIdx, selectedOpt) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const q = questions[qIdx];
+            const isCorrect = (selectedOpt === q.correct);
+            const timerVal = parseInt(document.getElementById('playerTimer').innerText) || 1;
+
+            const selectedBtn = document.getElementById(`optBtn_${selectedOpt}`);
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                const points = 500 + (timerVal * 30);
+                db.ref(`players/${currentPlayerName}/score`).transaction(s => (s || 0) + points);
+                const phrase = correctPhrases[Math.floor(Math.random() * correctPhrases.length)];
+                document.getElementById('feedbackMsg').innerHTML = `<span style="color: var(--btn-green);">${phrase} (+${points} نقطة)</span>`;
+            } else {
+                selectedBtn.classList.add('wrong');
+                document.getElementById(`optBtn_${q.correct}`).classList.add('correct');
+                const phrase = wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)];
+                document.getElementById('feedbackMsg').innerHTML = `<span style="color: var(--btn-red);">${phrase}</span>`;
+            }
+
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`optBtn_${i}`);
+                if (btn) btn.onclick = null;
+            }
+        }
+
+        function showLeaderboard(isFinal) {
+            db.ref('players').once('value', snap => {
+                const players = snap.val() || {};
+                let sorted = Object.keys(players).map(k => ({ name: k, score: players[k].score || 0 }));
+                sorted.sort((a, b) => b.score - a.score);
+
+                let html = '';
+                if (isFinal && sorted.length > 0) {
+                    const winner = sorted[0];
+                    html += `
+                        <div class="winner-box">
+                            🏆 المركز الأول / 1st Place 🏆
+                            <div class="winner-name">${winner.name}</div>
+                            <div>${winner.score} نقطة / Points</div>
+                        </div>
+                    `;
+                }
+
+                sorted.forEach((p, index) => {
+                    html += `
+                        <div class="player-row" style="${index === 0 ? 'border-color: #f59e0b;' : ''}">
+                            <span>#${index + 1} ${p.name}</span>
+                            <strong>${p.score} نقطة</strong>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('leaderboardList').innerHTML = html;
+                switchView('leaderboardView');
+            });
+        }
+    </script>
+</body>
+</html>
