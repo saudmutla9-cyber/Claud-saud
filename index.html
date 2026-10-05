@@ -3,54 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة سعود التفاعلية</title>
+    <title>لعبة التحدي التفاعلية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-        .card { background: #fff; max-width: 650px; margin: 20px auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .nav-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .btn { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn:hover { background: #2980b9; }
-        .btn-admin { background: #8e44ad; }
-        .btn-success { background: #2ecc71; }
-        .timer { font-size: 2.5rem; font-weight: bold; color: #e74c3c; margin: 15px 0; }
-        #qrcode { display: flex; justify-content: center; margin: 15px 0; }
-        .hidden { display: none; }
-        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
+        body { background: #1a1a2e; color: #fff; margin: 0; padding: 20px; text-align: center; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: #16213e; max-width: 600px; width: 100%; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 1px solid #0f3460; }
+        h1 { margin-bottom: 5px; color: #e94560; }
+        h2 { margin-top: 0; color: #00fff5; font-weight: 300; }
+        .btn { background: #e94560; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn:hover { background: #ff6b81; }
+        .btn-admin { background: #0f3460; border: 1px solid #00fff5; color: #00fff5; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #0f3460; background: #0f3460; color: #fff; font-size: 1rem; text-align: center; }
+        #qrcode { display: flex; justify-content: center; padding: 15px; background: #fff; border-radius: 12px; width: fit-content; margin: 20px auto; }
+        .timer { font-size: 3rem; font-weight: bold; color: #ff2e63; margin: 15px 0; }
+        .hidden { display: none !important; }
+        .player-tag { display: inline-block; background: #0f3460; padding: 6px 12px; margin: 4px; border-radius: 20px; border: 1px solid #e94560; }
+        .option-btn { background: #0f3460; margin: 8px 0; text-align: right; border: 1px solid #16213e; }
+        .option-btn:hover { background: #e94560; }
     </style>
 </head>
 <body>
 
-    <!-- التنقل بين الشاشات -->
-    <div class="nav-btns">
-        <button class="btn" onclick="showScreen('player')">📱 واجهة اللاعبين</button>
-        <button class="btn btn-admin" onclick="showScreen('admin')">⚙️ لوحة الأدمن</button>
-    </div>
-
-    <!-- 1. واجهة اللاعبين -->
-    <div id="playerScreen" class="card">
-        <h1>🎮 مرحباً بك في اللعبة</h1>
-        <p>انتظر بدء السؤال من الشاشة الرئيسية...</p>
+    <!-- 1. الشاشة الرئيسية للبروجكتور (عرض الترحيب والباركود) -->
+    <div id="mainDisplay" class="card">
+        <h1>مرحباً بكم في اللعبة</h1>
+        <h2>Welcome to the Game</h2>
+        <p style="color: #a2a8d3;">امسح الباركود للانضمام إلى التحدي عبر جوالك</p>
         <div id="qrcode"></div>
-        <p style="font-size: 0.9rem; color: #666;">امسح الباركود للانضمام من الجوال</p>
-        <div class="timer" id="playerTimer">15</div>
-        <div id="currentQuestion" style="font-size: 1.2rem; font-weight: bold;">بانتظار إطلاق السؤال...</div>
+        <button class="btn btn-admin" onclick="switchView('adminView')">⚙️ دخول الأدمن</button>
     </div>
 
-    <!-- 2. لوحة التحكم (الأدمن) -->
-    <div id="adminScreen" class="card hidden">
-        <h1>⚙️ لوحة تحكم الأدمن</h1>
-        
-        <h3>إضافة سؤال جديد:</h3>
-        <input type="text" id="qInput" placeholder="اكتب السؤال هنا...">
-        <button class="btn btn-success" onclick="sendQuestion()">إطلاق السؤال للمشاركين</button>
-        
-        <hr style="margin: 20px 0;">
+    <!-- 2. واجهة إدخال اسم اللاعب (على الجوال) -->
+    <div id="playerRegisterView" class="card hidden">
+        <h1>انضمام للتحدي 🎮</h1>
+        <p>أدخل اسمك للانضمام للعبة</p>
+        <input type="text" id="playerNameInput" placeholder="اكتب اسمك هنا...">
+        <button class="btn" onclick="registerPlayer()">دخول</button>
+    </div>
 
-        <h3>التحكم في العداد:</h3>
-        <button class="btn" onclick="startAdminTimer()">إعادة تشغيل العداد (15 ثانية)</button>
+    <!-- 3. صفحة انتظار اللاعبين -->
+    <div id="playerWaitingView" class="card hidden">
+        <h1 id="welcomePlayerMsg">أهلاً بك!</h1>
+        <p style="color: #00fff5; font-size: 1.2rem;">أنت الآن في قائمة الانتظار ⏳</p>
+        <p>يرجى الانتظار، ستبدأ اللعبة عندما يطلق الأدمن السؤال الأول.</p>
+    </div>
+
+    <!-- 4. واجهة لعب الأسئلة للاعبين -->
+    <div id="playerGameView" class="card hidden">
+        <div class="timer" id="gameTimer">15</div>
+        <h2 id="questionTitle" style="color: #fff;">السؤال...</h2>
+        <div id="optionsContainer"></div>
+    </div>
+
+    <!-- 5. لوحة تحكم الأدمن -->
+    <div id="adminView" class="card hidden">
+        <h1 style="color: #00fff5;">⚙️ لوحة تحكم الأدمن</h1>
+        <h3>المشاركون المنضمون:</h3>
+        <div id="playersList" style="margin-bottom: 15px;">لا يوجد لاعبين بعد...</div>
+        
+        <button class="btn" onclick="startNextQuestion()">▶️ بدء اللعبة / السؤال التالي</button>
         <div class="timer" id="adminTimer">15</div>
+        <p id="adminStatus" style="color: #a2a8d3;"></p>
     </div>
 
     <!-- Firebase SDKs -->
@@ -58,7 +72,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        // إعدادات Firebase
+        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AiZaSyAC3Keb8UpONcT7Nj_shA1CYZDY3cJdq1w",
             authDomain: "fm-game-ee133.firebaseapp.com",
@@ -73,61 +87,111 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // توليد الباركود تلقائياً لرابط الموقع
-        new QRCode(document.getElementById("qrcode"), {
-            text: window.location.href,
-            width: 150,
-            height: 150
-        });
+        // مجموعة الأسئلة
+        const questions = [
+            { q: "ما هي عاصمة المملكة العربية السعودية؟", options: ["جدة", "الرياض", "الدمام", "مكة"], correct: 1 },
+            { q: "كم عدد ألوان علم المملكة العربية السعودية؟", options: ["لون واحد", "لونان", "ثلاثة ألوان", "أربعة ألوان"], correct: 1 },
+            { q: "ما هو الرمز الوطني للمملكة؟", options: ["النخلة والسيفان", "الصقر", "الأسد", "الجمل"], correct: 0 }
+        ];
 
-        // التبديل بين الواجهات
-        function showScreen(screen) {
-            document.getElementById('playerScreen').classList.add('hidden');
-            document.getElementById('adminScreen').classList.add('hidden');
-            
-            if(screen === 'player') document.getElementById('playerScreen').classList.remove('hidden');
-            if(screen === 'admin') document.getElementById('adminScreen').classList.remove('hidden');
-        }
-
-        // إدارة العداد
-        let timerVal = 15;
+        let currentQIndex = -1;
         let timerInterval;
 
-        function startAdminTimer() {
-            db.ref('timer').set(15);
+        // توليد الباركود
+        new QRCode(document.getElementById("qrcode"), {
+            text: window.location.href.split('?')[0] + '?mode=play',
+            width: 180,
+            height: 180
+        });
+
+        // توجيه الشاشات تلقائياً حسب الرابط
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'play') {
+            switchView('playerRegisterView');
         }
 
-        // إرسال سؤال من الأدمن
-        function sendQuestion() {
-            const q = document.getElementById('qInput').value;
-            if(q) {
-                db.ref('question').set(q);
-                startAdminTimer();
+        function switchView(viewId) {
+            ['mainDisplay', 'playerRegisterView', 'playerWaitingView', 'playerGameView', 'adminView'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        // تسجيل اللاعب
+        function registerPlayer() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            if (name) {
+                db.ref('players/' + name).set({ joined: true });
+                document.getElementById('welcomePlayerMsg').innerText = "أهلاً بك يا " + name + "!";
+                switchView('playerWaitingView');
             }
         }
 
-        // الاستماع للتحديثات المباشرة من Firebase
-        db.ref('question').on('value', (snap) => {
-            if(snap.val()) {
-                document.getElementById('currentQuestion').innerText = "السؤال الحالي: " + snap.val();
+        // متابعة قائمة اللاعبين للأدمن
+        db.ref('players').on('value', snap => {
+            const players = snap.val();
+            if (players) {
+                let html = '';
+                Object.keys(players).forEach(p => { html += `<span class="player-tag">${p}</span>`; });
+                document.getElementById('playersList').innerHTML = html;
             }
         });
 
-        db.ref('timer').on('value', (snap) => {
-            clearInterval(timerInterval);
-            timerVal = snap.val() || 15;
-            document.getElementById('playerTimer').innerText = timerVal;
-            document.getElementById('adminTimer').innerText = timerVal;
+        // الأدمن يبدأ أو ينتقل للسؤال التالي
+        function startNextQuestion() {
+            currentQIndex++;
+            if (currentQIndex < questions.length) {
+                db.ref('gameState').set({
+                    questionIndex: currentQIndex,
+                    timer: 15,
+                    status: 'active'
+                });
+                startTimer(15);
+            } else {
+                db.ref('gameState').set({ status: 'ended' });
+            }
+        }
 
+        function startTimer(seconds) {
+            let sec = seconds;
+            clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                if(timerVal > 0) {
-                    timerVal--;
-                    document.getElementById('playerTimer').innerText = timerVal;
-                    document.getElementById('adminTimer').innerText = timerVal;
-                } else {
+                sec--;
+                db.ref('gameState/timer').set(sec);
+                if (sec <= 0) {
                     clearInterval(timerInterval);
                 }
             }, 1000);
+        }
+
+        // مزامنة حالة اللعبة مع جميع أجهزة المشاركين
+        db.ref('gameState').on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+
+            // تحديث العداد
+            if (document.getElementById('gameTimer')) document.getElementById('gameTimer').innerText = data.timer || 0;
+            if (document.getElementById('adminTimer')) document.getElementById('adminTimer').innerText = data.timer || 0;
+
+            // عرض السؤال للاعبين
+            if (data.status === 'active' && data.questionIndex !== undefined) {
+                const q = questions[data.questionIndex];
+                if (document.getElementById('playerRegisterView').classList.contains('hidden') && 
+                    !document.getElementById('adminView').classList.contains('hidden') === false) {
+                    switchView('playerGameView');
+                }
+
+                document.getElementById('questionTitle').innerText = q.q;
+                let optHtml = '';
+                q.options.forEach((opt, idx) => {
+                    optHtml += `<button class="btn option-btn">${opt}</button>`;
+                });
+                document.getElementById('optionsContainer').innerHTML = optHtml;
+            } else if (data.status === 'ended') {
+                if (!document.getElementById('adminView').classList.contains('hidden') === false) {
+                    document.getElementById('playerGameView').innerHTML = "<h1>🏁 انتهت اللعبة! شكراً لمشاركتكم.</h1>";
+                }
+            }
         });
     </script>
 </body>
