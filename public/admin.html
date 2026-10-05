@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>لوحة التحكم · FM Challenge Host</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  body { overflow-x: hidden; }
+  .host { min-height: 100vh; display: flex; flex-direction: column; padding: 28px 40px 110px; }
+  .bar {
+    position: fixed; inset: auto 0 0 0; z-index: 5;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 14px 28px calc(14px + env(safe-area-inset-bottom));
+    background: var(--bg-deep); border-top: 1px solid var(--panel-line);
+  }
+  .bar .info { margin-inline-end: auto; font-weight: 800; }
+  .bar .btn { font-size: 18px; padding: 10px 22px; }
+  .switch { display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; }
+  .switch input { width: 20px; height: 20px; accent-color: var(--c); }
+
+  /* Lobby */
+  .lobby { flex: 1; display: grid; grid-template-rows: auto 1fr auto; gap: 24px; text-align: center; }
+  .players { display: flex; flex-wrap: wrap; justify-content: center; align-content: start; gap: 10px; }
+  .chip { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 999px; padding: 6px 16px; font-weight: 800; font-size: 20px; }
+  .chip button { background: none; color: var(--muted); margin-inline-start: 8px; font-size: 16px; }
+  .chip.off { opacity: .5; }
+  .qr-zone { display: flex; align-items: center; justify-content: center; gap: 28px; }
+  .qr-zone img { width: 230px; height: 230px; background: #fff; border-radius: 16px; padding: 10px; }
+  .qr-zone .how { text-align: start; }
+  .qr-zone .how b { font-size: 28px; display: block; }
+  .qr-zone .url { margin-top: 10px; font-weight: 700; color: var(--gold); direction: ltr; text-align: left; word-break: break-all; }
+  .count-big { font-size: 22px; font-weight: 800; color: var(--muted); }
+
+  /* Question */
+  .hq-head { display: flex; align-items: center; gap: 24px; }
+  .hq-head .q-count { font-size: 26px; }
+  .hq-head .timer { width: 120px; height: 120px; margin-inline-start: auto; }
+  .hq-head .timer span { font-size: 46px; }
+  .hq-text { margin: 22px 0; }
+  .hq-text .ar { font-size: clamp(30px, 3.6vw, 52px); font-weight: 900; line-height: 1.3; }
+  .hq-text .en { display: block; font-size: clamp(18px, 1.8vw, 28px); margin-top: 8px; }
+  .hopts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .hopts .opt { min-height: 110px; font-size: 1.3em; }
+  .hopts .opt .txt { font-size: clamp(20px, 1.8vw, 28px); }
+  .hopts .opt .txt .en { font-size: .65em; }
+  .hopts .opt .shape { width: 52px; height: 52px; font-size: 26px; }
+  .opt .cnt { margin-inline-start: auto; font-size: 28px; font-weight: 900; background: rgba(0,0,0,.2); border-radius: 10px; padding: 2px 14px; }
+  .answered { font-size: 24px; font-weight: 800; text-align: center; margin-top: 20px; }
+
+  /* Reveal */
+  .reveal { display: grid; grid-template-columns: 1fr 1.1fr; gap: 36px; flex: 1; }
+  .reveal h2 { font-size: 28px; font-weight: 900; margin-bottom: 12px; }
+  .reveal .hopts { grid-template-columns: 1fr; gap: 10px; }
+  .reveal .hopts .opt { min-height: 72px; }
+  .board.cols { grid-template-columns: 1fr 1fr; font-size: 20px; }
+  .next-in { color: var(--gold); font-weight: 800; }
+
+  /* Final */
+  .final { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+  .final .board { max-width: 1100px; grid-template-columns: repeat(3, 1fr); font-size: 20px; }
+
+  /* PIN */
+  .pin { max-width: 360px; }
+
+  @media (max-width: 900px) {
+    .host { padding: 18px 16px 150px; }
+    .hopts, .reveal, .board.cols, .final .board { grid-template-columns: 1fr; }
+    .qr-zone { flex-direction: column; }
+    .qr-zone .how { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PIN gate -->
+<section id="v-pin" class="screen center">
+  <p class="tag">لوحة تحكم المسؤول <span class="en">Host controls</span></p>
+  <form id="pinForm" class="join pin">
+    <label for="pin">رمز الدخول <span class="en">PIN</span></label>
+    <input id="pin" type="password" inputmode="numeric" required>
+    <button class="btn primary" type="submit">دخول <span class="en">Enter</span></button>
+    <p id="pinErr" class="err" role="alert"></p>
+  </form>
+</section>
+
+<!-- Lobby: welcome + QR -->
+<section id="v-lobby" class="host hidden">
+  <div class="lobby">
+    <div>
+      <h1 class="welcome-ar">مرحباً بكم</h1>
+      <p class="welcome-en">Welcome</p>
+      <p class="tag" style="margin-top:12px">تحدي إدارة المرافق <span class="en">FM Challenge</span></p>
+    </div>
+    <div>
+      <p class="count-big" style="margin-bottom:14px">اللاعبون <span id="lCount">0</span> / <span id="lMax">30</span> <span class="en">players</span></p>
+      <div class="players" id="lPlayers"></div>
+    </div>
+    <div class="qr-zone">
+      <img id="qr" alt="QR code to join">
+      <div class="how">
+        <b>امسح الباركود وسجّل اسمك</b>
+        <span class="en" style="font-size:20px">Scan the code and enter your name</span>
+        <div class="url" id="joinUrl"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Question -->
+<section id="v-q" class="host hidden">
+  <div class="hq-head">
+    <div class="q-count">سؤال <span id="hNum"></span> / <span id="hTotal"></span> <span class="en">Question</span></div>
+    <div class="timer" id="hTimer">
+      <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="27"/><circle class="bar" id="hTimerBar" cx="32" cy="32" r="27"/></svg>
+      <span id="hTimerNum">15</span>
+    </div>
+  </div>
+  <div class="hq-text"><div class="ar" id="hAr"></div><span class="en" id="hEn"></span></div>
+  <div class="hopts" id="hOpts"></div>
+  <p class="answered">أجاب <span id="hAnswered">0</span> من <span id="hPlayers">0</span> <span class="en">answered</span></p>
+</section>
+
+<!-- Reveal + leaderboard -->
+<section id="v-r" class="host hidden">
+  <div class="reveal">
+    <div>
+      <h2>سؤال <span id="rNum"></span>: الإجابة الصحيحة <span class="en" style="font-size:.7em">Correct answer</span></h2>
+      <div class="hq-text" style="margin:0 0 14px"><div class="ar" id="rAr" style="font-size:24px"></div></div>
+      <div class="hopts" id="rOpts"></div>
+    </div>
+    <div>
+      <h2>الترتيب <span class="en" style="font-size:.7em">Leaderboard</span></h2>
+      <ol class="board cols" id="rBoard"></ol>
+    </div>
+  </div>
+</section>
+
+<!-- Final -->
+<section id="v-f" class="host hidden">
+  <div class="final">
+    <div class="winner pop">
+      <div class="crown">🏆</div>
+      <div class="label">الفائز بالمركز الأول · Winner</div>
+      <div class="wname" id="fName"></div>
+      <div class="wscore"><span id="fScore"></span> <span class="en">pts</span></div>
+    </div>
+    <ol class="board" id="fBoard"></ol>
+  </div>
+</section>
+
+<!-- Control bar -->
+<div class="bar hidden" id="bar">
+  <div class="info" id="barInfo"></div>
+  <label class="switch" id="autoWrap"><input type="checkbox" id="auto"> انتقال تلقائي <span class="en">Auto next</span></label>
+  <button class="btn primary" id="bStart">ابدأ اللعبة <span class="en">Start</span></button>
+  <button class="btn primary" id="bEnd">إنهاء السؤال <span class="en">End question</span></button>
+  <button class="btn primary" id="bNext">السؤال التالي <span class="en">Next</span></button>
+  <button class="btn" id="bReset">لعبة جديدة <span class="en">New game</span></button>
+  <button class="btn" id="bClear">مسح اللاعبين <span class="en">Clear players</span></button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const socket = io();
+const LETTERS = ['A', 'B', 'C', 'D'];
+const RING = 2 * Math.PI * 27;
+let offset = 0, tick = null, authed = false, pinVal = '';
+try { pinVal = sessionStorage.getItem('fm_pin') || ''; } catch {}
+
+function show(id) {
+  document.querySelectorAll('body > section').forEach(s => s.classList.toggle('hidden', s.id !== id));
+  $('bar').classList.toggle('hidden', id === 'v-pin');
+}
+const now = () => Date.now() + offset;
+
+function auth(pin) {
+  socket.emit('admin:auth', { pin }, res => {
+    if (res.ok) { authed = true; pinVal = pin; try { sessionStorage.setItem('fm_pin', pin); } catch {} }
+    else { $('pinErr').textContent = 'رمز غير صحيح · Wrong PIN'; show('v-pin'); }
+  });
+}
+socket.on('connect', () => { if (pinVal) auth(pinVal); });
+$('pinForm').addEventListener('submit', e => { e.preventDefault(); $('pinErr').textContent = ''; auth($('pin').value); });
+
+$('bStart').onclick = () => socket.emit('admin:start');
+$('bEnd').onclick = () => socket.emit('admin:next');
+$('bNext').onclick = () => socket.emit('admin:next');
+$('auto').onchange = e => socket.emit('admin:auto', { on: e.target.checked });
+$('bReset').onclick = () => { if (confirm('بدء لعبة جديدة مع تصفير النقاط؟\nStart a new game and reset scores?')) socket.emit('admin:reset', { clearPlayers: false }); };
+$('bClear').onclick = () => { if (confirm('مسح جميع اللاعبين؟\nRemove all players?')) socket.emit('admin:reset', { clearPlayers: true }); };
+
+function controls(s) {
+  const p = s.phase;
+  $('bStart').classList.toggle('hidden', p !== 'lobby');
+  $('bStart').disabled = s.playerCount === 0;
+  $('bEnd').classList.toggle('hidden', p !== 'question');
+  $('bNext').classList.toggle('hidden', p !== 'reveal');
+  $('bNext').innerHTML = s.question && s.question.index + 1 >= s.total
+    ? 'النتائج النهائية <span class="en">Final results</span>'
+    : 'السؤال التالي <span class="en">Next</span>';
+  $('autoWrap').classList.toggle('hidden', p === 'final');
+  $('auto').checked = s.autoAdvance;
+  $('bReset').classList.toggle('hidden', p === 'lobby');
+  $('bClear').classList.toggle('hidden', p !== 'lobby' && p !== 'final');
+}
+
+function optionEl(o, i, extra) {
+  const d = document.createElement('div');
+  d.className = 'opt o' + i;
+  d.innerHTML = `<span class="shape">${LETTERS[i]}</span><span class="txt"><span></span><span class="en"></span></span>`;
+  d.querySelector('.txt span').textContent = o.ar;
+  d.querySelector('.txt .en').textContent = o.ar === o.en ? '' : o.en;
+  if (extra != null) { const c = document.createElement('span'); c.className = 'cnt'; c.textContent = extra; d.appendChild(c); }
+  return d;
+}
+
+function fillBoard(ol, lb, withGain, cols) {
+  ol.innerHTML = '';
+  // ترتيب عمودي: المراكز تنزل في العمود الأول ثم الذي يليه
+  const narrow = window.innerWidth <= 900;
+  ol.style.gridAutoFlow = narrow ? 'row' : 'column';
+  ol.style.gridTemplateRows = narrow ? '' : `repeat(${Math.max(1, Math.ceil(lb.length / cols))}, auto)`;
+  let rank = 0, prev = null;
+  lb.forEach((p, i) => {
+    if (p.score !== prev) { rank = i + 1; prev = p.score; }
+    const li = document.createElement('li');
+    if (!p.connected) li.className = 'off';
+    li.innerHTML = '<span class="pos"></span><span class="nm"></span><span class="gain"></span><span class="sc"></span>';
+    li.children[0].textContent = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    li.children[1].textContent = p.name;
+    li.children[2].textContent = withGain && p.gained ? '+' + p.gained : '';
+    li.children[3].textContent = p.score;
+    ol.appendChild(li);
+  });
+}
+
+socket.on('state', s => {
+  if (!authed) return;
+  offset = s.serverNow - Date.now();
+  clearInterval(tick);
+  controls(s);
+  $('barInfo').textContent = '';
+
+  if (s.phase === 'lobby') {
+    $('lCount').textContent = s.playerCount;
+    $('lMax').textContent = s.maxPlayers;
+    if (s.qr) $('qr').src = s.qr;
+    $('joinUrl').textContent = s.joinUrl;
+    const box = $('lPlayers'); box.innerHTML = '';
+    s.leaderboard.forEach(p => {
+      const c = document.createElement('span');
+      c.className = 'chip' + (p.connected ? '' : ' off');
+      c.textContent = p.name;
+      const x = document.createElement('button');
+      x.textContent = '✕'; x.title = 'إزالة · Remove';
+      x.onclick = () => socket.emit('admin:kick', { name: p.name });
+      c.appendChild(x);
+      box.appendChild(c);
+    });
+    $('barInfo').textContent = s.playerCount ? 'جاهز للبدء · Ready to start' : 'بانتظار اللاعبين · Waiting for players';
+    show('v-lobby');
+  }
+
+  if (s.phase === 'question') {
+    const q = s.question;
+    $('hNum').textContent = q.index + 1; $('hTotal').textContent = q.total;
+    $('hAr').textContent = q.ar; $('hEn').textContent = q.ar === q.en ? '' : q.en;
+    const box = $('hOpts');
+    if (box.dataset.q !== String(q.index)) {
+      box.dataset.q = q.index; box.innerHTML = '';
+      q.options.forEach((o, i) => box.appendChild(optionEl(o, i)));
+    }
+    $('hAnswered').textContent = s.answered; $('hPlayers').textContent = s.playerCount;
+    const update = () => {
+      const left = Math.max(0, s.endsAt - now());
+      const sec = Math.ceil(left / 1000);
+      $('hTimerNum').textContent = sec;
+      $('hTimerBar').style.strokeDasharray = RING;
+      $('hTimerBar').style.strokeDashoffset = RING * (1 - left / 15000);
+      $('hTimer').classList.toggle('low', sec <= 5);
+      if (left <= 0) clearInterval(tick);
+    };
+    update(); tick = setInterval(update, 100);
+    show('v-q');
+  }
+
+  if (s.phase === 'reveal') {
+    const q = s.question;
+    $('rNum').textContent = q.index + 1;
+    $('rAr').textContent = q.ar;
+    const box = $('rOpts'); box.innerHTML = '';
+    q.options.forEach((o, i) => {
+      const el = optionEl(o, i, s.distribution[i]);
+      el.classList.add(i === s.correct ? 'right' : 'dim');
+      if (i === s.correct) el.querySelector('.shape').textContent = '✓';
+      box.appendChild(el);
+    });
+    fillBoard($('rBoard'), s.leaderboard, true, 2);
+    const update = () => {
+      if (!s.nextAt) { $('barInfo').textContent = 'متوقف — اضغط التالي · Paused, press Next'; return; }
+      const sec = Math.max(0, Math.ceil((s.nextAt - now()) / 1000));
+      $('barInfo').innerHTML = `<span class="next-in">التالي خلال ${sec} ث · Next in ${sec}s</span>`;
+    };
+    update(); tick = setInterval(update, 250);
+    show('v-r');
+  }
+
+  if (s.phase === 'final') {
+    const lb = s.leaderboard;
+    $('fName').textContent = lb[0] ? lb[0].name : '';
+    $('fScore').textContent = lb[0] ? lb[0].score : 0;
+    fillBoard($('fBoard'), lb, false, 3);
+    $('barInfo').textContent = 'انتهى التحدي · Game over';
+    show('v-f');
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E2A78">
+<title>تحدي إدارة المرافق · FM Challenge</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- 1. Join -->
+<section id="s-join" class="screen center hidden">
+  <h1 class="welcome-ar">مرحباً بكم</h1>
+  <p class="welcome-en">Welcome</p>
+  <p class="tag">تحدي إدارة المرافق <span class="en">FM Challenge</span></p>
+  <form id="joinForm" class="join" autocomplete="off">
+    <label for="name">اكتب اسمك <span class="en">Your name</span></label>
+    <input id="name" maxlength="24" required>
+    <button class="btn primary" type="submit">دخول <span class="en">Join</span></button>
+    <p id="joinErr" class="err" role="alert"></p>
+  </form>
+</section>
+
+<!-- 2. Lobby -->
+<section id="s-lobby" class="screen center hidden">
+  <p class="tag">تحدي إدارة المرافق <span class="en">FM Challenge</span></p>
+  <h1 class="welcome-ar" style="font-size:clamp(34px,9vw,64px)">أهلاً <span id="lobbyName"></span></h1>
+  <p style="font-size:22px;font-weight:800">أنت داخل اللعبة! بانتظار بدء التحدي…</p>
+  <p class="en">You're in! Waiting for the host to start…</p>
+  <div class="stats"><div class="stat"><b id="lobbyCount">0</b><span>لاعب · players</span></div></div>
+</section>
+
+<!-- 3. Question -->
+<section id="s-q" class="screen hidden">
+  <div class="q-head">
+    <div class="q-count">سؤال <span id="qNum"></span> / <span id="qTotal"></span><br><span class="en">Question</span></div>
+    <div class="timer" id="timer">
+      <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="27"/><circle class="bar" id="timerBar" cx="32" cy="32" r="27"/></svg>
+      <span id="timerNum">15</span>
+    </div>
+    <div class="score-pill"><span id="qScore">0</span> <span class="en">pts</span></div>
+  </div>
+  <div class="q-text"><div class="ar" id="qAr"></div><span class="en" id="qEn"></span></div>
+  <div class="options" id="opts"></div>
+  <p class="lock hidden" id="lock">تم استلام إجابتك ✓ <span class="en">Answer locked</span></p>
+</section>
+
+<!-- 4. Result after each question -->
+<section id="s-r" class="screen center hidden">
+  <div class="fb pop" id="fb">
+    <div class="icon" id="fbIcon"></div>
+    <div class="msg" id="fbMsg"></div>
+    <div class="msg-en en" id="fbMsgEn"></div>
+    <div class="pts" id="fbPts"></div>
+  </div>
+  <div class="answer-was" id="answerWas">
+    <small>الإجابة الصحيحة · Correct answer</small>
+    <div id="correctTxt" style="font-weight:800;font-size:18px"></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="rScore">0</b><span>نقاطك · Score</span></div>
+    <div class="stat"><b id="rRank">-</b><span>ترتيبك · Rank</span></div>
+  </div>
+</section>
+
+<!-- 5. Final -->
+<section id="s-f" class="screen hidden" style="align-items:center;gap:18px">
+  <div class="winner pop">
+    <div class="crown">🏆</div>
+    <div class="label">المركز الأول · Winner</div>
+    <div class="wname" id="fWinner"></div>
+    <div class="wscore"><span id="fWinnerScore"></span> <span class="en">pts</span></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="fRank">-</b><span>ترتيبك · Your rank</span></div>
+    <div class="stat"><b id="fScore">0</b><span>نقاطك · Your score</span></div>
+  </div>
+  <ol class="board" id="fBoard" style="max-width:520px"></ol>
+</section>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const socket = io();
+const LETTERS = ['A', 'B', 'C', 'D'];
+const RING = 2 * Math.PI * 27;
+let offset = 0, state = null, tick = null, builtFor = -1, myName = '';
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+
+// ===== Motivational phrases =====
+const PHRASES = {
+  first:   [['المركز الأول لك! 🥇', 'First place is yours!']],
+  correct: [
+    ['أنت كفو! استمر 💪', "You've got this! Keep going"],
+    ['مستقبل إدارة المرافق يعتمد عليك', 'The future of FM depends on you'],
+    ['إجابة في الصميم! 🎯', 'Spot on!'],
+    ['ما شاء الله عليك، واصل!', 'Impressive, keep it up!'],
+    ['خبير مرافق بامتياز!', 'A true FM expert!']
+  ],
+  wrong: [
+    ['أنت قدها، شد حيلك!', 'You can do it, push harder!'],
+    ['كنت قريب، حاول أكثر!', 'So close, try harder!'],
+    ['ولا يهمك، السؤال الجاي لك', "No worries, the next one's yours"],
+    ['ركّز، الفوز قريب!', 'Focus, the win is close!']
+  ],
+  late: [
+    ['الوقت خلص! خلك أسرع المرة الجاية ⏱️', "Time's up! Be quicker next time"],
+    ['فاتك السؤال، ركّز على الجاي!', 'Missed it, get the next one!']
+  ]
+};
+const pick = (list, i) => list[i % list.length];
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('hidden', s.id !== id));
+}
+const now = () => Date.now() + offset;
+
+// ===== Join / resume =====
+socket.on('connect', () => {
+  const token = store.get('fm_token');
+  if (!token) return show('s-join');
+  socket.emit('player:resume', { token }, res => {
+    if (!res.ok) { store.del('fm_token'); show('s-join'); }
+  });
+});
+
+$('joinForm').addEventListener('submit', e => {
+  e.preventDefault();
+  $('joinErr').textContent = '';
+  socket.emit('player:join', { name: $('name').value }, res => {
+    if (!res.ok) return ($('joinErr').textContent = res.error);
+    store.set('fm_token', res.token);
+  });
+});
+
+socket.on('kicked', () => { store.del('fm_token'); state = null; show('s-join'); });
+
+// ===== Render =====
+socket.on('state', s => {
+  offset = s.serverNow - Date.now();
+  state = s;
+  myName = s.me.name;
+  clearInterval(tick);
+  ({ lobby: renderLobby, question: renderQuestion, reveal: renderReveal, final: renderFinal })[s.phase](s);
+});
+
+function renderLobby(s) {
+  builtFor = -1;
+  $('lobbyName').textContent = s.me.name;
+  $('lobbyCount').textContent = s.playerCount;
+  show('s-lobby');
+}
+
+function renderQuestion(s) {
+  const q = s.question;
+  $('qNum').textContent = q.index + 1;
+  $('qTotal').textContent = q.total;
+  $('qScore').textContent = s.me.score;
+  $('qAr').textContent = q.ar;
+  $('qEn').textContent = q.ar === q.en ? '' : q.en;
+  if (builtFor !== q.index) {
+    builtFor = q.index;
+    $('opts').innerHTML = '';
+    q.options.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt o' + i;
+      b.innerHTML = `<span class="shape">${LETTERS[i]}</span><span class="txt"><span></span><span class="en"></span></span>`;
+      b.querySelector('.txt span').textContent = o.ar;
+      b.querySelector('.txt .en').textContent = o.ar === o.en ? '' : o.en;
+      b.onclick = () => {
+        if (state.myChoice !== null || state.phase !== 'question') return;
+        state.myChoice = i;
+        markChoice(i);
+        socket.emit('player:answer', { choice: i });
+      };
+      $('opts').appendChild(b);
+    });
+  }
+  markChoice(s.myChoice);
+  show('s-q');
+  const update = () => {
+    const left = Math.max(0, s.endsAt - now());
+    const sec = Math.ceil(left / 1000);
+    $('timerNum').textContent = sec;
+    $('timerBar').style.strokeDasharray = RING;
+    $('timerBar').style.strokeDashoffset = RING * (1 - left / 15000);
+    $('timer').classList.toggle('low', sec <= 5);
+    if (left <= 0) {
+      clearInterval(tick);
+      document.querySelectorAll('#opts .opt').forEach(b => (b.disabled = true));
+    }
+  };
+  update();
+  tick = setInterval(update, 100);
+}
+
+function markChoice(choice) {
+  const btns = document.querySelectorAll('#opts .opt');
+  btns.forEach((b, i) => {
+    b.disabled = choice !== null;
+    b.classList.toggle('picked', choice === i);
+    b.classList.toggle('dim', choice !== null && choice !== i);
+  });
+  $('lock').classList.toggle('hidden', choice === null);
+}
+
+function renderReveal(s) {
+  const r = s.result, qi = s.question.index;
+  let kind, phrase;
+  if (r.correct) { kind = 'good'; phrase = s.me.rank === 1 ? pick(PHRASES.first, 0) : pick(PHRASES.correct, qi); }
+  else if (r.answered) { kind = 'badf'; phrase = pick(PHRASES.wrong, qi); }
+  else { kind = 'late'; phrase = pick(PHRASES.late, qi); }
+
+  const fb = $('fb');
+  fb.className = 'fb pop ' + kind;
+  void fb.offsetWidth; // restart animation
+  $('fbIcon').textContent = r.correct ? '✅' : r.answered ? '❌' : '⏱️';
+  $('fbMsg').textContent = phrase[0];
+  $('fbMsgEn').textContent = phrase[1];
+  $('fbPts').textContent = r.correct ? `+${r.points}` : '+0';
+  const c = s.question.options[s.correct];
+  $('correctTxt').textContent = `${LETTERS[s.correct]} — ${c.ar}`;
+  $('answerWas').classList.toggle('hidden', r.correct);
+  $('rScore').textContent = s.me.score;
+  $('rRank').textContent = `${s.me.rank} / ${s.playerCount}`;
+  show('s-r');
+}
+
+function renderFinal(s) {
+  const lb = s.leaderboard;
+  $('fWinner').textContent = lb[0] ? lb[0].name : '';
+  $('fWinnerScore').textContent = lb[0] ? lb[0].score : 0;
+  $('fRank').textContent = `${s.me.rank} / ${s.playerCount}`;
+  $('fScore').textContent = s.me.score;
+  const ol = $('fBoard');
+  ol.innerHTML = '';
+  let rank = 0, prev = null;
+  lb.forEach((p, i) => {
+    if (p.score !== prev) { rank = i + 1; prev = p.score; }
+    const li = document.createElement('li');
+    if (p.name === myName) li.className = 'me';
+    li.innerHTML = '<span class="pos"></span><span class="nm"></span><span></span><span class="sc"></span>';
+    li.children[0].textContent = rank;
+    li.children[1].textContent = p.name;
+    li.children[3].textContent = p.score;
+    ol.appendChild(li);
+  });
+  show('s-f');
+}
+</script>
+</body>
+</html>
