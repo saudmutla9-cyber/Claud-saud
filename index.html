@@ -61,7 +61,7 @@
 </head>
 <body>
 
-    <!-- 1. الشاشة الرئيسية -->
+    <!-- 1. الشاشة الرئيسية (شاشة العرض للجميع / كود QR) -->
     <div id="mainDisplay" class="card">
         <h1>مرحباً بكم في تحدي إدارة المرافق</h1>
         <h2>Welcome to FM Challenge</h2>
@@ -73,7 +73,7 @@
 
         <p style="font-size: 0.9rem;">20 سؤالاً · 20 ثانية لكل سؤال</p>
         
-        <button class="btn btn-admin" onclick="switchView('adminView')">⚙️ لوحة تحكم الأدمن</button>
+        <button class="btn btn-admin" onclick="openAdminView()">⚙️ الدخول للوحة تحكم الأدمن</button>
     </div>
 
     <!-- 2. واجهة تسجيل اللاعب -->
@@ -111,7 +111,7 @@
         <div id="feedbackMsg" style="margin-top: 15px; font-weight: bold; color: var(--accent-color);"></div>
     </div>
 
-    <!-- 5. واجهة النتائج والترتيب بين الأسئلة / النهائية -->
+    <!-- 5. واجهة النتائج والترتيب -->
     <div id="leaderboardView" class="card hidden">
         <button class="home-icon" onclick="resetGameAndGoHome()">🏠 الرئيسية</button>
         <h1 id="lbTitle">جدول الترتيب 🏆</h1>
@@ -150,7 +150,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const targetUrl = window.location.href.split('?')[0] + '?mode=play';
+        // توليد رابط مسح الباركود للاعبين فقط
+        const targetUrl = window.location.origin + window.location.pathname + '?mode=play';
         document.getElementById('qrImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(targetUrl);
 
         const questions = [
@@ -169,7 +170,7 @@
             { qAr: "13. ما درجة الحرارة المريحة الموصى بها غالبًا في المكاتب؟", qEn: "What office temperature range is commonly recommended?", options: [{ar: "18–20°C", en: "18–20°C"}, {ar: "25–27°C", en: "25–27°C"}, {ar: "15–17°C", en: "15–17°C"}, {ar: "21–24°C", en: "21–24°C"}], correct: 3 },
             { qAr: "14. ماذا يقيس مؤشر استغلال المساحات (Space Utilization)؟", qEn: "What does space utilization measure?", options: [{ar: "مدى الاستفادة الفعلية من المساحات مقارنة بالمتاح", en: "How effectively available space is actually used"}, {ar: "إجمالي المساحة المؤجرة بالمتر المربع", en: "Total leased area in square meters"}, {ar: "تكلفة الإيجار لكل موظف", en: "Rent cost per employee"}, {ar: "عدد المكاتب المخصصة لكل قسم", en: "Number of desks allocated per department"}], correct: 0 },
             { qAr: "15. ما الهدف الأساسي لإدارة المرافق؟", qEn: "What is the core goal of Facilities Management?", options: [{ar: "تقليل تكاليف المباني بأي وسيلة", en: "Cutting building costs by any means"}, {ar: "صيانة المعدات وإصلاح الأعطال", en: "Maintaining equipment and fixing breakdowns"}, {ar: "دمج الناس والمكان والعمليات لدعم أهداف المنظمة", en: "Integrating people, place and process to support the organization"}, {ar: "إدارة العقارات والأصول المملوكة للشركة", en: "Managing the company's real estate portfolio"}], correct: 2 },
-            { qAr: "16. ما الغرض من سجل الأصول (Asset Register)؟", qEn: "What is the purpose of an asset register?", options: [{ar: "حصر الموظفين حسب الأقسام", en: "Listing employees by department"}, {ar: "توثيق الأصول ومواقعها وحالتها وتواريخ صيانتها", en: "Recording assets, their locations, condition and maintenance dates"}, {ar: "متابعة طلبات الشراء المعلقة", en: "Tracking pending purchase requests"}, {ar: "تسجيل الزوار اليومي", en: "Daily visitor log"}], correct: 1 },
+            { qAr: "16. ما الغرض من سجل الأصول (Asset Register)؟", qEn: "What is the purpose of an asset register?", options: [{ar: "حصر الموظفين حسب الأقسام", en: "Listing employees by department"}, {ar: "توثيق الأصول وم مواقعها وحالتها وتواريخ صيانتها", en: "Recording assets, their locations, condition and maintenance dates"}, {ar: "متابعة طلبات الشراء المعلقة", en: "Tracking pending purchase requests"}, {ar: "تسجيل الزوار اليومي", en: "Daily visitor log"}], correct: 1 },
             { qAr: "17. قبل اعتماد فاتورة المورد، ما الذي يجب على إدارة المرافق التحقق منه؟", qEn: "Before approving a vendor invoice, what should FM verify?", options: [{ar: "أن المورد هو الأقدم تعاملًا مع الشركة", en: "That the vendor has worked with the company the longest"}, {ar: "أن قيمة الفاتورة أقل من الشهر السابق", en: "That the amount is lower than last month"}, {ar: "أن الفاتورة مختومة فقط", en: "Only that the invoice is stamped"}, {ar: "مطابقة الفاتورة للعقد وللخدمة المنفذة فعليًا", en: "That the invoice matches the contract and the work actually delivered"}], correct: 3 },
             { qAr: "18. ماذا يقيس مؤشر زمن الاستجابة (Response Time) في بلاغات الصيانة؟", qEn: "What does response time measure in maintenance requests?", options: [{ar: "الوقت من تسجيل البلاغ حتى بدء الفني بالتعامل معه", en: "Time from logging a request until a technician starts work"}, {ar: "الوقت اللازم لإغلاق البلاغ نهائيًا", en: "Time needed to fully close the request"}, {ar: "عدد البلاغات المسجلة شهريًا", en: "Number of requests logged per month"}, {ar: "متوسط تكلفة البلاغ الواحد", en: "Average cost per request"}], correct: 0 },
             { qAr: "19. ما دور إدارة المرافق في خطة استمرارية الأعمال؟", qEn: "What is FM's role in a business continuity plan?", options: [{ar: "إعداد خطة التسويق أثناء الأزمات", en: "Preparing the crisis marketing plan"}, {ar: "إدارة علاقات المستثمرين", en: "Managing investor relations"}, {ar: "ضمان جاهزية المبنى والأنظمة الحيوية لاستمرار العمل في الطوارئ", en: "Keeping the building and critical systems ready so work continues during emergencies"}, {ar: "إعداد خطط التوظيف البديلة", en: "Preparing backup hiring plans"}], correct: 2 },
@@ -180,9 +181,10 @@
         let hasAnswered = false;
         let localTimerLoop = null;
         let currentGameState = null;
+        let currentRemainingSecs = 20;
 
         const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode');
+        let mode = urlParams.get('mode');
 
         function switchView(viewId) {
             ['mainDisplay', 'playerRegisterView', 'playerWaitingView', 'questionView', 'leaderboardView', 'adminView'].forEach(id => {
@@ -193,15 +195,8 @@
             if (target) target.classList.remove('hidden');
         }
 
-        // إدارات الحالة الأولية
-        if (mode === 'admin') {
-            switchView('adminView');
-        } else if (mode === 'play') {
-            if (!currentPlayerName) {
-                switchView('playerRegisterView');
-            } else {
-                switchView('playerWaitingView');
-            }
+        function openAdminView() {
+            window.location.href = window.location.origin + window.location.pathname + '?mode=admin';
         }
 
         function resetGameAndGoHome() {
@@ -210,7 +205,11 @@
             currentPlayerName = '';
             db.ref('gameState').set({ status: 'idle', questionIndex: -1, startTime: 0, duration: 0 });
             db.ref('players').remove();
-            switchView('mainDisplay');
+            if (mode === 'admin') {
+                switchView('adminView');
+            } else {
+                window.location.href = window.location.origin + window.location.pathname;
+            }
         }
 
         function registerPlayer() {
@@ -233,7 +232,6 @@
                 db.ref('players/' + name).set({ score: 0, joined: Date.now() });
                 document.getElementById('welcomePlayerMsg').innerText = "أهلاً بك يا " + name + "!";
                 
-                // توجيه تلقائي للشاشة المناسبة
                 if (currentGameState && currentGameState.status === 'question') {
                     switchView('questionView');
                 } else if (currentGameState && (currentGameState.status === 'leaderboard' || currentGameState.status === 'ended')) {
@@ -244,7 +242,6 @@
             });
         }
 
-        // الاستماع لقائمة اللاعبين
         db.ref('players').on('value', snap => {
             const players = snap.val() || {};
             const names = Object.keys(players);
@@ -252,7 +249,6 @@
             document.getElementById('adminPlayersList').innerHTML = names.map(n => `<span style="display:inline-block; background:#334155; padding:4px 8px; margin:2px; border-radius:4px;">${n}</span>`).join(' ');
         });
 
-        // تشغيل اللعبة من قبل الأدمن
         function startNewGame() {
             startQuestionStage(0);
         }
@@ -285,25 +281,28 @@
             });
         }
 
-        // المحرك الرئيسي لمزامنة العداد والحالة
+        // محرك مزامنة اللعبة
         db.ref('gameState').on('value', snap => {
             currentGameState = snap.val();
-            if (!currentGameState) return;
+            
+            // إذا لم تكن اللعبة مبدوءة بعد
+            if (!currentGameState || currentGameState.status === 'idle') {
+                if (mode === 'admin') switchView('adminView');
+                else if (mode === 'play' && !currentPlayerName) switchView('playerRegisterView');
+                else if (mode === 'play' && currentPlayerName) switchView('playerWaitingView');
+                else switchView('mainDisplay');
+                return;
+            }
 
-            // إذا كان المستخدم لاعبًا ولم يسجل اسمه بعد
-            if (mode === 'play' && !currentPlayerName) {
+            if (mode === 'admin') {
+                // الأدمن يبقى في لوحة التحكّم أو شاشة العرض
+                switchView('adminView');
+            } else if (mode === 'play' && !currentPlayerName) {
                 switchView('playerRegisterView');
                 return;
             }
 
             clearInterval(localTimerLoop);
-
-            if (currentGameState.status === 'idle') {
-                if (mode === 'play') switchView('playerWaitingView');
-                else if (mode === 'admin') switchView('adminView');
-                else switchView('mainDisplay');
-                return;
-            }
 
             if (currentGameState.status === 'ended') {
                 document.getElementById('lbTimer').style.display = 'none';
@@ -313,28 +312,27 @@
                 return;
             }
 
-            // إدارة المؤقت للسؤال والنتائج المرحلية
-            const duration = currentGameState.duration;
-            const startTime = currentGameState.startTime;
+            const duration = Number(currentGameState.duration) || 0;
+            const startTime = Number(currentGameState.startTime) || Date.now();
 
             localTimerLoop = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const remaining = Math.max(0, duration - elapsed);
+                currentRemainingSecs = remaining;
 
                 if (currentGameState.status === 'question') {
                     document.getElementById('qTimer').innerText = remaining;
-                    const pct = (remaining / duration) * 100;
+                    const pct = duration > 0 ? (remaining / duration) * 100 : 0;
                     document.getElementById('qTimerBar').style.width = pct + '%';
 
                     if (window.currentQIdx !== currentGameState.questionIndex) {
                         window.currentQIdx = currentGameState.questionIndex;
                         hasAnswered = false;
                         showQuestion(currentGameState.questionIndex);
-                    } else if (document.getElementById('questionView').classList.contains('hidden')) {
+                    } else if (document.getElementById('questionView').classList.contains('hidden') && mode !== 'admin') {
                         switchView('questionView');
                     }
 
-                    // انتهاء الوقت (يقوده الأدمن للانتقال)
                     if (remaining <= 0) {
                         clearInterval(localTimerLoop);
                         if (mode === 'admin') {
@@ -348,7 +346,7 @@
                     document.getElementById('lbTitle').innerText = 'جدول الترتيب 🏆';
                     document.getElementById('lbSubTitle').innerText = 'Leaderboard';
                     
-                    if (document.getElementById('leaderboardView').classList.contains('hidden')) {
+                    if (document.getElementById('leaderboardView').classList.contains('hidden') && mode !== 'admin') {
                         showLeaderboard(false);
                     }
 
@@ -380,7 +378,7 @@
                 `;
             });
             document.getElementById('optionsContainer').innerHTML = html;
-            switchView('questionView');
+            if (mode !== 'admin') switchView('questionView');
         }
 
         function submitAnswer(qIdx, selectedOpt) {
@@ -389,9 +387,8 @@
 
             const q = questions[qIdx];
             const isCorrect = (selectedOpt === q.correct);
-            const timerVal = parseInt(document.getElementById('qTimer').innerText) || 1;
+            const timerVal = currentRemainingSecs || 1;
 
-            // اختيار الخيار بدون إظهار الإجابة الصحيحة أو الخاطئة
             document.getElementById(`optBtn_${selectedOpt}`).classList.add('selected');
 
             for (let i = 0; i < 4; i++) {
@@ -435,7 +432,7 @@
                 });
 
                 document.getElementById('leaderboardList').innerHTML = html;
-                switchView('leaderboardView');
+                if (mode !== 'admin') switchView('leaderboardView');
             });
         }
     </script>
