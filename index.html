@@ -17,7 +17,7 @@
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: all 0.2s; }
         body { background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: var(--card-bg); max-width: 650px; width: 100%; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; text-align: center; }
+        .card { background: var(--card-bg); max-width: 650px; width: 100%; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; text-align: center; position: relative; }
         
         h1 { margin: 0 0 5px 0; color: var(--accent-color); font-size: 1.8rem; }
         h2 { margin: 0 0 15px 0; color: #38bdf8; font-weight: 400; font-size: 1.2rem; }
@@ -25,9 +25,10 @@
 
         .btn { background: var(--accent-color); color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
         .btn:hover { opacity: 0.9; }
-        .btn-admin { background: transparent; border: 2px solid var(--accent-color); color: var(--accent-color); margin-top: 20px; font-size: 1.1rem; }
+        .btn-admin { background: transparent; border: 2px solid var(--accent-color); color: var(--accent-color); margin-top: 15px; font-size: 1rem; }
         .btn-admin:hover { background: var(--accent-color); color: #000; }
         .btn-success { background: var(--btn-green); color: #fff; }
+        .btn-reset { background: #e11d48; color: #fff; margin-top: 10px; }
         
         input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 1.1rem; text-align: center; }
         
@@ -49,6 +50,8 @@
 
         .bilingual-en { display: block; font-size: 0.85rem; color: #94a3b8; direction: ltr; text-align: left; }
         .bilingual-ar { display: block; font-size: 1rem; }
+        
+        .home-icon { position: absolute; top: 15px; left: 15px; background: #334155; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -59,14 +62,12 @@
         <h2>Welcome to FM Challenge</h2>
         <p>امسح الباركود للانضمام إلى التحدي عبر جوالك (الحد الأقصى 30 لاعبًا)</p>
         
-        <!-- باركود مباشر مضمون الظهور -->
         <div class="qr-box">
             <img id="qrImg" src="" alt="QR Code">
         </div>
 
         <p style="font-size: 0.9rem;">20 سؤالاً · 15 ثانية لكل سؤال</p>
         
-        <!-- زر لوحة تحكم الأدمن -->
         <button class="btn btn-admin" onclick="switchView('adminView')">⚙️ لوحة تحكم الأدمن</button>
     </div>
 
@@ -98,6 +99,7 @@
 
     <!-- 5. واجهة النتائج والترتيب بين الأسئلة -->
     <div id="leaderboardView" class="card hidden">
+        <button class="home-icon" onclick="resetGameAndGoHome()">🏠 الرئيسية</button>
         <h1>جدول الترتيب 🏆</h1>
         <h2>Leaderboard</h2>
         <div class="leaderboard" id="leaderboardList"></div>
@@ -110,9 +112,9 @@
         <div id="adminPlayersList" style="margin-bottom: 15px; text-align: right; max-height: 100px; overflow-y: auto;"></div>
         
         <button class="btn btn-success" id="nextQBtn" onclick="nextQuestion()">▶️ بدء اللعبة / السؤال التالي</button>
+        <button class="btn btn-reset" onclick="resetGameAndGoHome()">🔄 إعادة تصفير اللعبة بالكامل</button>
         <div class="timer" id="adminTimer">15</div>
-        <p id="adminStatus"></p>
-        <button class="btn btn-admin" style="margin-top:10px;" onclick="switchView('mainDisplay')">⬅️ العودة للرئيسية</button>
+        <button class="btn btn-admin" onclick="switchView('mainDisplay')">⬅️ العودة للرئيسية</button>
     </div>
 
     <!-- Firebase SDKs -->
@@ -120,7 +122,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AiZaSyAC3Keb8UpONcT7Nj_shA1CYZDY3cJdq1w",
             authDomain: "fm-game-ee133.firebaseapp.com",
@@ -135,7 +136,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // توليد الباركود المباشر
         const targetUrl = window.location.href.split('?')[0] + '?mode=play';
         document.getElementById('qrImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(targetUrl);
 
@@ -170,8 +170,12 @@
         let timerInterval;
 
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('mode') === 'play') {
+        const mode = urlParams.get('mode');
+
+        if (mode === 'play') {
             switchView('playerRegisterView');
+        } else if (mode === 'admin') {
+            switchView('adminView');
         }
 
         function switchView(viewId) {
@@ -179,6 +183,12 @@
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function resetGameAndGoHome() {
+            db.ref('gameState').set({ status: 'idle', questionIndex: -1 });
+            db.ref('players').remove();
+            switchView('mainDisplay');
         }
 
         function registerPlayer() {
@@ -241,7 +251,7 @@
 
         db.ref('gameState').on('value', snap => {
             const state = snap.val();
-            if (!state) return;
+            if (!state || mode === 'admin') return;
 
             document.getElementById('playerTimer').innerText = state.timer || 0;
             document.getElementById('adminTimer').innerText = state.timer || 0;
@@ -253,6 +263,8 @@
                 showLeaderboard(false);
             } else if (state.status === 'ended') {
                 showLeaderboard(true);
+            } else if (state.status === 'idle' && !mode) {
+                switchView('mainDisplay');
             }
         });
 
@@ -273,7 +285,7 @@
             });
             document.getElementById('optionsContainer').innerHTML = html;
 
-            if (currentPlayerName && !document.getElementById('adminView').classList.contains('hidden') === false) {
+            if (currentPlayerName) {
                 switchView('playerGameView');
             }
         }
