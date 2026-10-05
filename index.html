@@ -87,7 +87,7 @@
         <p>ستبدأ اللعبة فور إطلاقها من قبل الأدمن.</p>
     </div>
 
-    <!-- 4. واجهة عرض السؤال (للاقتسام بين اللاعب والأدمن) -->
+    <!-- 4. واجهة عرض السؤال -->
     <div id="questionView" class="card hidden">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <span class="question-number" id="qNum">سؤال 1 من 20</span>
@@ -114,7 +114,7 @@
 
     <!-- 6. لوحة تحكم الأدمن -->
     <div id="adminView" class="card hidden">
-        <h1>⚙️️ لوحة تحكم الأدمن</h1>
+        <h1>⚙️ لوحة تحكم الأدمن</h1>
         <p>عدد اللاعبين المنضمين: <strong id="playerCount" style="color: var(--accent-color);">0</strong> / 30</p>
         <div id="adminPlayersList" style="margin-bottom: 15px; text-align: right; max-height: 100px; overflow-y: auto;"></div>
         
@@ -168,17 +168,22 @@
             { qAr: "20. أي إجراء يحقق وفورات مباشرة في فاتورة الكهرباء؟", qEn: "Which action directly reduces the electricity bill?", options: [{ar: "زيادة ساعات تشغيل التكييف للحفاظ على البرودة", en: "Running the AC for longer hours to keep spaces cool"}, {ar: "استخدام إضاءة LED وحساسات الحركة وجدولة التكييف", en: "Using LED lighting, motion sensors and AC scheduling"}, {ar: "شراء مولد احتياطي أكبر", en: "Buying a larger backup generator"}, {ar: "تجديد أثاث المكاتب", en: "Replacing office furniture"}], correct: 1 }
         ];
 
-        let currentPlayerName = '';
+        let currentPlayerName = localStorage.getItem('fm_player_name') || '';
         let hasAnswered = false;
         let timerInterval;
 
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode');
 
-        if (mode === 'play') {
-            switchView('playerRegisterView');
-        } else if (mode === 'admin') {
+        // تحديد الشاشة المبدئية
+        if (mode === 'admin') {
             switchView('adminView');
+        } else if (mode === 'play') {
+            if (!currentPlayerName) {
+                switchView('playerRegisterView');
+            } else {
+                switchView('playerWaitingView');
+            }
         }
 
         function switchView(viewId) {
@@ -190,14 +195,16 @@
 
         function resetGameAndGoHome() {
             clearInterval(timerInterval);
-            db.ref('gameState').set({ status: 'idle', questionIndex: -1 });
+            localStorage.removeItem('fm_player_name');
+            currentPlayerName = '';
+            db.ref('gameState').set({ status: 'idle', questionIndex: -1, timer: 0 });
             db.ref('players').remove();
             switchView('mainDisplay');
         }
 
         function registerPlayer() {
             const name = document.getElementById('playerNameInput').value.trim();
-            if (!name) return alert('يرجى إدخل اسمك');
+            if (!name) return alert('يرجى إدخال اسمك');
 
             db.ref('players').once('value', snap => {
                 const players = snap.val() || {};
@@ -206,9 +213,19 @@
                     return;
                 }
                 currentPlayerName = name;
+                localStorage.setItem('fm_player_name', name);
                 db.ref('players/' + name).set({ score: 0, joined: true });
                 document.getElementById('welcomePlayerMsg').innerText = "أهلاً بك يا " + name + "!";
-                switchView('playerWaitingView');
+                
+                // التوجيه التلقائي حسب حالة اللعبة
+                db.ref('gameState').once('value', gSnap => {
+                    const st = gSnap.val();
+                    if (st && st.status === 'question') {
+                        switchView('questionView');
+                    } else {
+                        switchView('playerWaitingView');
+                    }
+                });
             });
         }
 
@@ -230,56 +247,67 @@
                     timer: 20,
                     status: 'question'
                 });
-                runMasterTimer(20, 'question', qIdx);
+                startCountDown(20, 'question', qIdx);
             } else {
-                db.ref('gameState').set({ status: 'ended' });
+                db.ref('gameState').set({ status: 'ended', timer: 0 });
             }
         }
 
-        function runMasterTimer(seconds, currentStatus, qIdx) {
-            if (mode !== 'admin') return; // الأدمن هو من يدير العداد الرئيسي
-            let sec = seconds;
+        function startCountDown(seconds, currentStatus, qIdx) {
             clearInterval(timerInterval);
-            
+            let sec = seconds;
+
             timerInterval = setInterval(() => {
                 sec--;
                 db.ref('gameState/timer').set(sec);
 
                 if (sec <= 0) {
                     clearInterval(timerInterval);
-                    if (currentStatus === 'question') {
-                        // الانتقال للترتيب لمدة 10 ثواني
-                        db.ref('gameState').set({
-                            questionIndex: qIdx,
-                            timer: 10,
-                            status: 'leaderboard'
-                        });
-                        runMasterTimer(10, 'leaderboard', qIdx);
-                    } else if (currentStatus === 'leaderboard') {
-                        // الانتقال للسؤال التالي تلقائياً
-                        nextQuestion(qIdx + 1);
+                    if (mode === 'admin') {
+                        if (currentStatus === 'question') {
+                            db.ref('gameState').set({
+                                questionIndex: qIdx,
+                                timer: 10,
+                                status: 'leaderboard'
+                            });
+                            startCountDown(10, 'leaderboard', qIdx);
+                        } else if (currentStatus === 'leaderboard') {
+                            nextQuestion(qIdx + 1);
+                        }
                     }
                 }
             }, 1000);
         }
 
+        // الاستماع المستمر لتحديثات حالة اللعبة والعداد
         db.ref('gameState').on('value', snap => {
             const state = snap.val();
             if (!state) return;
 
+            // تحديث قيم العدادات على الشاشة
+            const displayTimer = state.timer !== undefined ? state.timer : 0;
+            document.getElementById('qTimer').innerText = displayTimer;
+            document.getElementById('lbTimer').innerText = displayTimer;
+
+            // إذا كان اللاعب لم يسجل اسمه بعد وهو في طور اللعب عبر الباركود
+            if (mode === 'play' && !currentPlayerName) {
+                switchView('playerRegisterView');
+                return;
+            }
+
             if (state.status === 'question') {
-                document.getElementById('qTimer').innerText = state.timer !== undefined ? state.timer : 20;
-                if (document.getElementById('questionView').classList.contains('hidden') || state.questionIndex !== window.currentQIdx) {
+                if (window.currentQIdx !== state.questionIndex) {
                     window.currentQIdx = state.questionIndex;
                     hasAnswered = false;
                     showQuestion(state.questionIndex);
+                } else if (document.getElementById('questionView').classList.contains('hidden')) {
+                    switchView('questionView');
                 }
             } else if (state.status === 'leaderboard') {
-                document.getElementById('lbTimer').innerText = state.timer !== undefined ? state.timer : 10;
                 document.getElementById('lbTimer').style.display = 'block';
                 showLeaderboard(false);
             } else if (state.status === 'ended') {
-                document.getElementById('lbTimer').style.display = 'none'; // إخفاء العداد في النهاية
+                document.getElementById('lbTimer').style.display = 'none';
                 showLeaderboard(true);
             } else if (state.status === 'idle') {
                 if (mode === 'play') switchView('playerWaitingView');
@@ -297,7 +325,6 @@
 
             let html = '';
             q.options.forEach((opt, optIdx) => {
-                // إذا كان المستخدم أدمن لا يمكنه الضغط على الخيارات
                 const isDisabled = mode === 'admin' ? 'disabled' : '';
                 html += `
                     <button class="option-btn" id="optBtn_${optIdx}" ${isDisabled} onclick="submitAnswer(${idx}, ${optIdx})">
@@ -318,10 +345,8 @@
             const isCorrect = (selectedOpt === q.correct);
             const timerVal = parseInt(document.getElementById('qTimer').innerText) || 1;
 
-            // تحديد الخيار المختار بدون إظهار صح أو خطأ
             document.getElementById(`optBtn_${selectedOpt}`).classList.add('selected');
 
-            // تعطيل باقي الأزرار
             for (let i = 0; i < 4; i++) {
                 const btn = document.getElementById(`optBtn_${i}`);
                 if (btn) btn.disabled = true;
