@@ -40,8 +40,8 @@
         
         .option-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 12px; margin: 8px 0; width: 100%; border-radius: 8px; text-align: right; cursor: pointer; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .option-btn:hover { background: #475569; }
-        .option-btn.correct { background: var(--btn-green) !important; color: #fff; }
-        .option-btn.wrong { background: var(--btn-red) !important; color: #fff; }
+        .option-btn.selected { background: #0284c7 !important; border-color: var(--accent-color); color: #fff; }
+        .option-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .leaderboard { margin-top: 15px; text-align: right; }
         .player-row { display: flex; justify-content: space-between; padding: 10px; background: #0f172a; margin: 5px 0; border-radius: 6px; border-right: 4px solid var(--accent-color); }
@@ -52,11 +52,12 @@
         .bilingual-ar { display: block; font-size: 1rem; }
         
         .home-icon { position: absolute; top: 15px; left: 15px; background: #334155; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+        .question-number { background: #334155; color: var(--accent-color); padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; display: inline-block; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- 1. الشاشة الرئيسية (الترحيب والباركود وزر الأدمن) -->
+    <!-- 1. الشاشة الرئيسية -->
     <div id="mainDisplay" class="card">
         <h1>مرحباً بكم في تحدي إدارة المرافق</h1>
         <h2>Welcome to FM Challenge</h2>
@@ -66,12 +67,12 @@
             <img id="qrImg" src="" alt="QR Code">
         </div>
 
-        <p style="font-size: 0.9rem;">20 سؤالاً · 15 ثانية لكل سؤال</p>
+        <p style="font-size: 0.9rem;">20 سؤالاً · 20 ثانية لكل سؤال</p>
         
         <button class="btn btn-admin" onclick="switchView('adminView')">⚙️ لوحة تحكم الأدمن</button>
     </div>
 
-    <!-- 2. واجهة تسجيل اللاعب (الجوال) -->
+    <!-- 2. واجهة تسجيل اللاعب -->
     <div id="playerRegisterView" class="card hidden">
         <h1>انضمام للتحدي 🎮</h1>
         <h2>Join the Challenge</h2>
@@ -83,18 +84,23 @@
     <div id="playerWaitingView" class="card hidden">
         <h1 id="welcomePlayerMsg">أهلاً بك!</h1>
         <p style="color: var(--accent-color); font-size: 1.2rem;">أنت الآن في قائمة الانتظار ⏳</p>
-        <p>ستبدأ اللعبة فور إطلاق السؤال الأول من قبل الأدمن.</p>
+        <p>ستبدأ اللعبة فور إطلاقها من قبل الأدمن.</p>
     </div>
 
-    <!-- 4. واجهة لعب الأسئلة للاعبين -->
-    <div id="playerGameView" class="card hidden">
-        <div class="timer" id="playerTimer">15</div>
-        <div id="questionContainer" style="margin-bottom: 15px; text-align: right;">
-            <span class="bilingual-ar" id="qAr" style="font-size: 1.2rem; font-weight: bold;"></span>
-            <span class="bilingual-en" id="qEn" style="margin-top: 4px;"></span>
+    <!-- 4. واجهة عرض السؤال (للاقتسام بين اللاعب والأدمن) -->
+    <div id="questionView" class="card hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="question-number" id="qNum">سؤال 1 من 20</span>
+            <div class="timer" id="qTimer" style="margin: 0;">20</div>
         </div>
+        
+        <div id="questionContainer" style="margin: 20px 0; text-align: right;">
+            <span class="bilingual-ar" id="qAr" style="font-size: 1.2rem; font-weight: bold;"></span>
+            <span class="bilingual-en" id="qEn" style="margin-top: 6px;"></span>
+        </div>
+        
         <div id="optionsContainer"></div>
-        <div id="feedbackMsg" style="margin-top: 15px; font-weight: bold; font-size: 1.1rem;"></div>
+        <div id="feedbackMsg" style="margin-top: 15px; font-weight: bold; color: var(--accent-color);"></div>
     </div>
 
     <!-- 5. واجهة النتائج والترتيب بين الأسئلة -->
@@ -102,18 +108,18 @@
         <button class="home-icon" onclick="resetGameAndGoHome()">🏠 الرئيسية</button>
         <h1>جدول الترتيب 🏆</h1>
         <h2>Leaderboard</h2>
+        <div class="timer" id="lbTimer" style="font-size: 1.8rem; color: #f59e0b;">10</div>
         <div class="leaderboard" id="leaderboardList"></div>
     </div>
 
     <!-- 6. لوحة تحكم الأدمن -->
     <div id="adminView" class="card hidden">
-        <h1>⚙️ لوحة تحكم الأدمن</h1>
+        <h1>⚙️️ لوحة تحكم الأدمن</h1>
         <p>عدد اللاعبين المنضمين: <strong id="playerCount" style="color: var(--accent-color);">0</strong> / 30</p>
         <div id="adminPlayersList" style="margin-bottom: 15px; text-align: right; max-height: 100px; overflow-y: auto;"></div>
         
-        <button class="btn btn-success" id="nextQBtn" onclick="nextQuestion()">▶️ بدء اللعبة / السؤال التالي</button>
+        <button class="btn btn-success" id="startBtn" onclick="startNewGame()">▶️ بدء اللعبة</button>
         <button class="btn btn-reset" onclick="resetGameAndGoHome()">🔄 إعادة تصفير اللعبة بالكامل</button>
-        <div class="timer" id="adminTimer">15</div>
         <button class="btn btn-admin" onclick="switchView('mainDisplay')">⬅️ العودة للرئيسية</button>
     </div>
 
@@ -138,9 +144,6 @@
 
         const targetUrl = window.location.href.split('?')[0] + '?mode=play';
         document.getElementById('qrImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(targetUrl);
-
-        const correctPhrases = ["كفو استمر! 🌟", "المركز الأول لك! 🚀", "مستقبل إدارة المرافق يعتمد عليك! 👏", "إجابة رائعة! 💯"];
-        const wrongPhrases = ["أنت قدها شد حيلك! 💪", "كنت قريب حاول أكثر! 🎯", "تعوضها في السؤال الجاي! 🔥", "ركز وبإذن الله القادم أفضل! ✨"];
 
         const questions = [
             { qAr: "1. أيٌّ من المهام التالية تقع عادةً ضمن الدور الإداري لإدارة المرافق؟", qEn: "Which task typically falls under FM's administrative role?", options: [{ar: "إدارة التوظيف وشؤون الموظفين", en: "Managing recruitment and employee relations"}, {ar: "إعداد القوائم المالية للشركة", en: "Preparing company financial statements"}, {ar: "إدارة البنية التحتية للشبكات والأنظمة", en: "Managing IT network infrastructure"}, {ar: "إدارة عقود الموردين ومتابعة أدائهم", en: "Managing vendor contracts and performance"}], correct: 3 },
@@ -179,13 +182,14 @@
         }
 
         function switchView(viewId) {
-            ['mainDisplay', 'playerRegisterView', 'playerWaitingView', 'playerGameView', 'leaderboardView', 'adminView'].forEach(id => {
+            ['mainDisplay', 'playerRegisterView', 'playerWaitingView', 'questionView', 'leaderboardView', 'adminView'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(viewId).classList.remove('hidden');
         }
 
         function resetGameAndGoHome() {
+            clearInterval(timerInterval);
             db.ref('gameState').set({ status: 'idle', questionIndex: -1 });
             db.ref('players').remove();
             switchView('mainDisplay');
@@ -193,7 +197,7 @@
 
         function registerPlayer() {
             const name = document.getElementById('playerNameInput').value.trim();
-            if (!name) return alert('يرجى إدخال اسمك');
+            if (!name) return alert('يرجى إدخل اسمك');
 
             db.ref('players').once('value', snap => {
                 const players = snap.val() || {};
@@ -215,107 +219,120 @@
             document.getElementById('adminPlayersList').innerHTML = names.map(n => `<span style="display:inline-block; background:#334155; padding:4px 8px; margin:2px; border-radius:4px;">${n}</span>`).join(' ');
         });
 
-        function nextQuestion() {
-            db.ref('gameState').once('value', snap => {
-                const state = snap.val() || { questionIndex: -1 };
-                let nextIdx = state.questionIndex + 1;
-
-                if (nextIdx < questions.length) {
-                    db.ref('gameState').set({
-                        questionIndex: nextIdx,
-                        timer: 15,
-                        status: 'question',
-                        startTime: Date.now()
-                    });
-                    runTimer(15);
-                } else {
-                    db.ref('gameState').set({ status: 'ended' });
-                }
-            });
+        function startNewGame() {
+            nextQuestion(0);
         }
 
-        function runTimer(seconds) {
+        function nextQuestion(qIdx) {
+            if (qIdx < questions.length) {
+                db.ref('gameState').set({
+                    questionIndex: qIdx,
+                    timer: 20,
+                    status: 'question'
+                });
+                runMasterTimer(20, 'question', qIdx);
+            } else {
+                db.ref('gameState').set({ status: 'ended' });
+            }
+        }
+
+        function runMasterTimer(seconds, currentStatus, qIdx) {
+            if (mode !== 'admin') return; // الأدمن هو من يدير العداد الرئيسي
             let sec = seconds;
             clearInterval(timerInterval);
+            
             timerInterval = setInterval(() => {
                 sec--;
                 db.ref('gameState/timer').set(sec);
+
                 if (sec <= 0) {
                     clearInterval(timerInterval);
-                    setTimeout(() => {
-                        db.ref('gameState/status').set('leaderboard');
-                    }, 1000);
+                    if (currentStatus === 'question') {
+                        // الانتقال للترتيب لمدة 10 ثواني
+                        db.ref('gameState').set({
+                            questionIndex: qIdx,
+                            timer: 10,
+                            status: 'leaderboard'
+                        });
+                        runMasterTimer(10, 'leaderboard', qIdx);
+                    } else if (currentStatus === 'leaderboard') {
+                        // الانتقال للسؤال التالي تلقائياً
+                        nextQuestion(qIdx + 1);
+                    }
                 }
             }, 1000);
         }
 
         db.ref('gameState').on('value', snap => {
             const state = snap.val();
-            if (!state || mode === 'admin') return;
-
-            document.getElementById('playerTimer').innerText = state.timer || 0;
-            document.getElementById('adminTimer').innerText = state.timer || 0;
+            if (!state) return;
 
             if (state.status === 'question') {
-                hasAnswered = false;
-                showQuestion(state.questionIndex);
+                document.getElementById('qTimer').innerText = state.timer !== undefined ? state.timer : 20;
+                if (document.getElementById('questionView').classList.contains('hidden') || state.questionIndex !== window.currentQIdx) {
+                    window.currentQIdx = state.questionIndex;
+                    hasAnswered = false;
+                    showQuestion(state.questionIndex);
+                }
             } else if (state.status === 'leaderboard') {
+                document.getElementById('lbTimer').innerText = state.timer !== undefined ? state.timer : 10;
+                document.getElementById('lbTimer').style.display = 'block';
                 showLeaderboard(false);
             } else if (state.status === 'ended') {
+                document.getElementById('lbTimer').style.display = 'none'; // إخفاء العداد في النهاية
                 showLeaderboard(true);
-            } else if (state.status === 'idle' && !mode) {
-                switchView('mainDisplay');
+            } else if (state.status === 'idle') {
+                if (mode === 'play') switchView('playerWaitingView');
+                else if (mode === 'admin') switchView('adminView');
+                else switchView('mainDisplay');
             }
         });
 
         function showQuestion(idx) {
             const q = questions[idx];
+            document.getElementById('qNum').innerText = `سؤال ${idx + 1} من ${questions.length}`;
             document.getElementById('qAr').innerText = q.qAr;
             document.getElementById('qEn').innerText = q.qEn;
             document.getElementById('feedbackMsg').innerText = '';
 
             let html = '';
             q.options.forEach((opt, optIdx) => {
+                // إذا كان المستخدم أدمن لا يمكنه الضغط على الخيارات
+                const isDisabled = mode === 'admin' ? 'disabled' : '';
                 html += `
-                    <button class="option-btn" id="optBtn_${optIdx}" onclick="submitAnswer(${idx}, ${optIdx})">
+                    <button class="option-btn" id="optBtn_${optIdx}" ${isDisabled} onclick="submitAnswer(${idx}, ${optIdx})">
                         <span class="bilingual-ar">${opt.ar}</span>
                         <span class="bilingual-en">${opt.en}</span>
                     </button>
                 `;
             });
             document.getElementById('optionsContainer').innerHTML = html;
-
-            if (currentPlayerName) {
-                switchView('playerGameView');
-            }
+            switchView('questionView');
         }
 
         function submitAnswer(qIdx, selectedOpt) {
-            if (hasAnswered) return;
+            if (hasAnswered || mode === 'admin') return;
             hasAnswered = true;
 
             const q = questions[qIdx];
             const isCorrect = (selectedOpt === q.correct);
-            const timerVal = parseInt(document.getElementById('playerTimer').innerText) || 1;
+            const timerVal = parseInt(document.getElementById('qTimer').innerText) || 1;
 
-            const selectedBtn = document.getElementById(`optBtn_${selectedOpt}`);
-            if (isCorrect) {
-                selectedBtn.classList.add('correct');
-                const points = 500 + (timerVal * 30);
-                db.ref(`players/${currentPlayerName}/score`).transaction(s => (s || 0) + points);
-                const phrase = correctPhrases[Math.floor(Math.random() * correctPhrases.length)];
-                document.getElementById('feedbackMsg').innerHTML = `<span style="color: var(--btn-green);">${phrase} (+${points} نقطة)</span>`;
-            } else {
-                selectedBtn.classList.add('wrong');
-                document.getElementById(`optBtn_${q.correct}`).classList.add('correct');
-                const phrase = wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)];
-                document.getElementById('feedbackMsg').innerHTML = `<span style="color: var(--btn-red);">${phrase}</span>`;
-            }
+            // تحديد الخيار المختار بدون إظهار صح أو خطأ
+            document.getElementById(`optBtn_${selectedOpt}`).classList.add('selected');
 
+            // تعطيل باقي الأزرار
             for (let i = 0; i < 4; i++) {
                 const btn = document.getElementById(`optBtn_${i}`);
-                if (btn) btn.onclick = null;
+                if (btn) btn.disabled = true;
             }
+
+            if (isCorrect) {
+                const points = 500 + (timerVal * 25);
+                db.ref(`players/${currentPlayerName}/score`).transaction(s => (s || 0) + points);
+            }
+
+            document.getElementById('feedbackMsg').innerText = 'تم تسجيل إجابتك! انتظر انتهاء الوقت... ⏳';
         }
 
         function showLeaderboard(isFinal) {
