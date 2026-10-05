@@ -3,196 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة التحدي التفاعلية</title>
+    <title>تحدي إدارة المرافق | FM Challenge</title>
+    <!-- مكتبة الباركود -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #1a1a2e; color: #fff; margin: 0; padding: 20px; text-align: center; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: #16213e; max-width: 600px; width: 100%; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 1px solid #0f3460; }
-        h1 { margin-bottom: 5px; color: #e94560; }
-        h2 { margin-top: 0; color: #00fff5; font-weight: 300; }
-        .btn { background: #e94560; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.3s; }
-        .btn:hover { background: #ff6b81; }
-        .btn-admin { background: #0f3460; border: 1px solid #00fff5; color: #00fff5; }
-        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #0f3460; background: #0f3460; color: #fff; font-size: 1rem; text-align: center; }
-        #qrcode { display: flex; justify-content: center; padding: 15px; background: #fff; border-radius: 12px; width: fit-content; margin: 20px auto; }
-        .timer { font-size: 3rem; font-weight: bold; color: #ff2e63; margin: 15px 0; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: all 0.2s ease; }
+        body { background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background-color: var(--card-bg); max-width: 700px; width: 100%; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; text-align: center; position: relative; overflow: hidden; }
+        
+        h1 { margin: 0 0 5px 0; color: var(--accent); font-size: 2rem; }
+        h2 { margin: 0 0 15px 0; color: var(--text-sub); font-size: 1.2rem; font-weight: 400; }
+        
+        .btn { background: var(--accent); color: #000; border: none; padding: 14px 28px; border-radius: 12px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
+        .btn:hover { background: var(--accent-hover); color: #fff; transform: translateY(-2px); }
+        .btn-admin { background: transparent; border: 2px solid var(--accent); color: var(--accent); margin-top: 25px; }
+        .btn-admin:hover { background: var(--accent); color: #000; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; border: 2px solid #334155; background: #0f172a; color: #fff; font-size: 1.1rem; text-align: center; outline: none; }
+        input:focus { border-color: var(--accent); }
+
+        #qrcode { display: flex; justify-content: center; padding: 15px; background: #fff; border-radius: 16px; width: fit-content; margin: 20px auto; }
+        
+        .timer-box { font-size: 2.5rem; font-weight: 800; color: var(--gold); margin: 10px 0; background: #0f172a; display: inline-block; padding: 5px 25px; border-radius: 50px; border: 2px solid var(--gold); }
         .hidden { display: none !important; }
-        .player-tag { display: inline-block; background: #0f3460; padding: 6px 12px; margin: 4px; border-radius: 20px; border: 1px solid #e94560; }
-        .option-btn { background: #0f3460; margin: 8px 0; text-align: right; border: 1px solid #16213e; }
-        .option-btn:hover { background: #e94560; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
+        .opt-btn { background: #0f172a; border: 2px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-size: 1rem; text-align: right; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .opt-btn:hover { border-color: var(--accent); background: #1e293b; }
+        .opt-btn.correct { background: var(--success) !important; color: white !important; border-color: var(--success) !important; }
+        .opt-btn.wrong { background: var(--danger) !important; color: whiteتصميم لعبة متكاملة لتحدي إدارة المرافق (FM Challenge) بجميع الشروط والمواصفات المطلوبة، بما في ذلك أسئلة الملف الـ 20، نظام احتساب النقاط بناءً على السرعة والدقة، واجهة الترحيب والباركود، واجهة اللاعبين مع التسجيل والانتظار، والتحكم الكامل للأدمن مع شاشة النتائج النهائية.
+
+### الكود الشامل والكامل للملف (`index.html`)
+
+استبدل محتوى ملف `index.html` كاملاً بالكود التالي:
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي إدارة المرافق | FM Challenge</title>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js](https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js)"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #06b6d4;
+            --btn-green: #10b981;
+            --btn-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: all 0.2s; }
+        body { background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: var(--card-bg); max-width: 650px; width: 100%; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; text-align: center; }
+        
+        h1 { margin: 0 0 5px 0; color: var(--accent-color); font-size: 1.8rem; }
+        h2 { margin: 0 0 15px 0; color: #38bdf8; font-weight: 400; font-size: 1.2rem; }
+        p { color: var(--text-sub); line-height: 1.5; }
+
+        .btn { background: var(--accent-color); color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
+        .btn:hover { opacity: 0.9; }
+        .btn-admin { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); margin-top: 25px; }
+        .btn-success { background: var(--btn-green); color: #fff; }
+        
+        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 1.1rem; text-align: center; }
+        
+        #qrcode { display: flex; justify-content: center; padding: 15px; background: #fff; border-radius: 12px; width: fit-content; margin: 20px auto; }
+        
+        .timer { font-size: 2.8rem; font-weight: bold; color: #f43f5e; margin: 10px 0; }
+        .hidden { display: none !important; }
+        
+        /* خيارات الأسئلة */
+        .option-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 12px; margin: 8px 0; width: 100%; border-radius: 8px; text-align: right; cursor: pointer; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .option-btn:hover { background: #475569; }
+        .option-btn.selected { border-color: var(--accent-color); background: #1e3a8a; }
+        .option-btn.correct { background: var(--btn-green) !important; color: #fff; }
+        .option-btn.wrong { background: var(--btn-red) !important; color: #fff; }
+
+        /* قوائم المتصدرين واللاعبين */
+        .leaderboard { margin-top: 15px; text-align: right; }
+        .player-row { display: flex; justify-content: space-between; padding: 10px; background: #0f172a; margin: 5px 0; border-radius: 6px; border-right: 4px solid var(--accent-color); }
+        .winner-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; font-size: 1.3rem; }
+        .winner-name { font-size: 2.2rem; font-weight: bold; margin-top: 5px; }
+
+        .bilingual-en { display: block; font-size: 0.85rem; color: #94a3b8; direction: ltr; text-align: left; }
+        .bilingual-ar { display: block; font-size: 1rem; }
     </style>
 </head>
 <body>
 
-    <!-- 1. الشاشة الرئيسية للبروجكتور (عرض الترحيب والباركود) -->
+    <!-- 1. الشاشة الرئيسية (الترحيب والباركود للبروجكتور) -->
     <div id="mainDisplay" class="card">
-        <h1>مرحباً بكم في اللعبة</h1>
-        <h2>Welcome to the Game</h2>
-        <p style="color: #a2a8d3;">امسح الباركود للانضمام إلى التحدي عبر جوالك</p>
+        <h1>مرحباً بكم في تحدي إدارة المرافق</h1>
+        <h2>Welcome to FM Challenge</h2>
+        <p>امسح الباركود للانضمام إلى التحدي عبر جوالك (الحد الأقصى 30 لاعبًا)</p>
         <div id="qrcode"></div>
-        <button class="btn btn-admin" onclick="switchView('adminView')">⚙️ دخول الأدمن</button>
-    </div>
-
-    <!-- 2. واجهة إدخال اسم اللاعب (على الجوال) -->
-    <div id="playerRegisterView" class="card hidden">
-        <h1>انضمام للتحدي 🎮</h1>
-        <p>أدخل اسمك للانضمام للعبة</p>
-        <input type="text" id="playerNameInput" placeholder="اكتب اسمك هنا...">
-        <button class="btn" onclick="registerPlayer()">دخول</button>
-    </div>
-
-    <!-- 3. صفحة انتظار اللاعبين -->
-    <div id="playerWaitingView" class="card hidden">
-        <h1 id="welcomePlayerMsg">أهلاً بك!</h1>
-        <p style="color: #00fff5; font-size: 1.2rem;">أنت الآن في قائمة الانتظار ⏳</p>
-        <p>يرجى الانتظار، ستبدأ اللعبة عندما يطلق الأدمن السؤال الأول.</p>
-    </div>
-
-    <!-- 4. واجهة لعب الأسئلة للاعبين -->
-    <div id="playerGameView" class="card hidden">
-        <div class="timer" id="gameTimer">15</div>
-        <h2 id="questionTitle" style="color: #fff;">السؤال...</h2>
-        <div id="optionsContainer"></div>
-    </div>
-
-    <!-- 5. لوحة تحكم الأدمن -->
-    <div id="adminView" class="card hidden">
-        <h1 style="color: #00fff5;">⚙️ لوحة تحكم الأدمن</h1>
-        <h3>المشاركون المنضمون:</h3>
-        <div id="playersList" style="margin-bottom: 15px;">لا يوجد لاعبين بعد...</div>
-        
-        <button class="btn" onclick="startNextQuestion()">▶️ بدء اللعبة / السؤال التالي</button>
-        <div class="timer" id="adminTimer">15</div>
-        <p id="adminStatus" style="color: #a2a8d3;"></p>
-    </div>
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-    <script>
-        // إعدادات Firebase الخاصة بك
-        const firebaseConfig = {
-            apiKey: "AiZaSyAC3Keb8UpONcT7Nj_shA1CYZDY3cJdq1w",
-            authDomain: "fm-game-ee133.firebaseapp.com",
-            databaseURL: "https://fm-game-ee133-default-rtdb.firebaseio.com",
-            projectId: "fm-game-ee133",
-            storageBucket: "fm-game-ee133.firebasestorage.app",
-            messagingSenderId: "661072425550",
-            appId: "1:661072425550:web:32804ea46fce82c323091f",
-            measurementId: "G-E95L0N336E"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // مجموعة الأسئلة
-        const questions = [
-            { q: "ما هي عاصمة المملكة العربية السعودية؟", options: ["جدة", "الرياض", "الدمام", "مكة"], correct: 1 },
-            { q: "كم عدد ألوان علم المملكة العربية السعودية؟", options: ["لون واحد", "لونان", "ثلاثة ألوان", "أربعة ألوان"], correct: 1 },
-            { q: "ما هو الرمز الوطني للمملكة؟", options: ["النخلة والسيفان", "الصقر", "الأسد", "الجمل"], correct: 0 }
-        ];
-
-        let currentQIndex = -1;
-        let timerInterval;
-
-        // توليد الباركود
-        new QRCode(document.getElementById("qrcode"), {
-            text: window.location.href.split('?')[0] + '?mode=play',
-            width: 180,
-            height: 180
-        });
-
-        // توجيه الشاشات تلقائياً حسب الرابط
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('mode') === 'play') {
-            switchView('playerRegisterView');
-        }
-
-        function switchView(viewId) {
-            ['mainDisplay', 'playerRegisterView', 'playerWaitingView', 'playerGameView', 'adminView'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(viewId).classList.remove('hidden');
-        }
-
-        // تسجيل اللاعب
-        function registerPlayer() {
-            const name = document.getElementById('playerNameInput').value.trim();
-            if (name) {
-                db.ref('players/' + name).set({ joined: true });
-                document.getElementById('welcomePlayerMsg').innerText = "أهلاً بك يا " + name + "!";
-                switchView('playerWaitingView');
-            }
-        }
-
-        // متابعة قائمة اللاعبين للأدمن
-        db.ref('players').on('value', snap => {
-            const players = snap.val();
-            if (players) {
-                let html = '';
-                Object.keys(players).forEach(p => { html += `<span class="player-tag">${p}</span>`; });
-                document.getElementById('playersList').innerHTML = html;
-            }
-        });
-
-        // الأدمن يبدأ أو ينتقل للسؤال التالي
-        function startNextQuestion() {
-            currentQIndex++;
-            if (currentQIndex < questions.length) {
-                db.ref('gameState').set({
-                    questionIndex: currentQIndex,
-                    timer: 15,
-                    status: 'active'
-                });
-                startTimer(15);
-            } else {
-                db.ref('gameState').set({ status: 'ended' });
-            }
-        }
-
-        function startTimer(seconds) {
-            let sec = seconds;
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                sec--;
-                db.ref('gameState/timer').set(sec);
-                if (sec <= 0) {
-                    clearInterval(timerInterval);
-                }
-            }, 1000);
-        }
-
-        // مزامنة حالة اللعبة مع جميع أجهزة المشاركين
-        db.ref('gameState').on('value', snap => {
-            const data = snap.val();
-            if (!data) return;
-
-            // تحديث العداد
-            if (document.getElementById('gameTimer')) document.getElementById('gameTimer').innerText = data.timer || 0;
-            if (document.getElementById('adminTimer')) document.getElementById('adminTimer').innerText = data.timer || 0;
-
-            // عرض السؤال للاعبين
-            if (data.status === 'active' && data.questionIndex !== undefined) {
-                const q = questions[data.questionIndex];
-                if (document.getElementById('playerRegisterView').classList.contains('hidden') && 
-                    !document.getElementById('adminView').classList.contains('hidden') === false) {
-                    switchView('playerGameView');
-                }
-
-                document.getElementById('questionTitle').innerText = q.q;
-                let optHtml = '';
-                q.options.forEach((opt, idx) => {
-                    optHtml += `<button class="btn option-btn">${opt}</button>`;
-                });
-                document.getElementById('optionsContainer').innerHTML = optHtml;
-            } else if (data.status === 'ended') {
-                if (!document.getElementById('adminView').classList.contains('hidden') === false) {
-                    document.getElementById('playerGameView').innerHTML = "<h1>🏁 انتهت اللعبة! شكراً لمشاركتكم.</h1>";
-                }
-            }
-        });
-    </script>
-</body>
-</html>
+        <p style="font-size:
