@@ -29,7 +29,9 @@
   .qr-zone img { width: 230px; height: 230px; background: #fff; border-radius: 16px; padding: 10px; }
   .qr-zone .how { text-align: start; }
   .qr-zone .how b { font-size: 28px; display: block; }
-  .qr-zone .url { margin-top: 10px; font-weight: 700; color: var(--gold); direction: ltr; text-align: left; word-break: break-all; }
+  .qr-zone .url { margin-top: 10px; font-weight: 700; color: var(--gold); direction: ltr; text-align: left; word-break: break-all; user-select: all; -webkit-user-select: all; cursor: text; }
+  .copy-btn { margin-top: 12px; font-size: 16px; padding: 8px 18px; }
+  .copy-btn.done { background: var(--ok); color: #073B22; border-color: transparent; }
   .count-big { font-size: 22px; font-weight: 800; color: var(--muted); }
 
   /* Question */
@@ -102,6 +104,7 @@
         <b>امسح الباركود وسجّل اسمك</b>
         <span class="en" style="font-size:20px">Scan the code and enter your name</span>
         <div class="url" id="joinUrl"></div>
+        <button class="btn copy-btn" id="copyUrl" type="button">نسخ الرابط <span class="en">Copy link</span></button>
       </div>
     </div>
   </div>
@@ -183,6 +186,22 @@ function auth(pin) {
 }
 socket.on('connect', () => { if (pinVal) auth(pinVal); });
 $('pinForm').addEventListener('submit', e => { e.preventDefault(); $('pinErr').textContent = ''; auth($('pin').value); });
+
+const COPY_LABEL = 'نسخ الرابط <span class="en">Copy link</span>';
+$('copyUrl').onclick = async () => {
+  const url = $('joinUrl').textContent;
+  let ok = false;
+  try { await navigator.clipboard.writeText(url); ok = true; } catch {
+    const t = document.createElement('textarea');
+    t.value = url; document.body.appendChild(t); t.select();
+    try { ok = document.execCommand('copy'); } catch {}
+    t.remove();
+  }
+  const b = $('copyUrl');
+  b.innerHTML = ok ? 'تم النسخ ✓ <span class="en">Copied</span>' : 'حدّد الرابط وانسخه يدوياً <span class="en">Select and copy</span>';
+  b.classList.toggle('done', ok);
+  setTimeout(() => { b.innerHTML = COPY_LABEL; b.classList.remove('done'); }, 2000);
+};
 
 $('bStart').onclick = () => socket.emit('admin:start');
 $('bEnd').onclick = () => socket.emit('admin:next');
